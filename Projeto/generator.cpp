@@ -1,35 +1,43 @@
 #include <iostream>
 #include <fstream>
+#include <iomanip> 
 #include <cmath>
 
 class Generator {
 public:
     // Generate a plane model
-    static void generatePlane(float sizeX, float sizeZ, int divisionsX, int divisionsZ, const std::string& filename) {
+    static void generatePlane(float size, int divisions, const std::string& filename) {
         std::ofstream outfile(filename);
         if (!outfile.is_open()) {
             std::cerr << "Error: Unable to open file " << filename << std::endl;
             return;
         }
 
-        float stepX = sizeX / divisionsX;
-        float stepZ = sizeZ / divisionsZ;
+        // Set precision to 6 decimals
+        outfile << std::fixed << std::setprecision(6);
+        
+        //tamanho dos catetos do triangulo
+        float step = size / divisions;
 
-        for (int z = 0; z < divisionsZ; ++z) {
-            for (int x = 0; x < divisionsX; ++x) {
+
+        // x e z sao o numero de divisoes
+        for (int z = 0; z < divisions; ++z) {
+            for (int x = 0; x < divisions; ++x) {
                 // Define vertices for each quad in the plane
-                float x1 = x * stepX - sizeX / 2;
-                float z1 = z * stepZ - sizeZ / 2;
-                float x2 = x1 + stepX;
-                float z2 = z1 + stepZ;
+                //quando o x,z=0 posx,posz= -size/2
+                //isto é, comeca no eixo -x/-z
+                float posX = x * step - size / 2;
+                float posZ = z * step - size / 2;
+                float x2 = posX + step;
+                float z2 = posZ + step;
 
-                outfile << "v " << x1 << " 0 " << z1 << std::endl;
-                outfile << "v " << x2 << " 0 " << z1 << std::endl;
-                outfile << "v " << x2 << " 0 " << z2 << std::endl;
+                outfile << "v;" << posX << " 0.000000;" << posZ << std::endl;
+                outfile << "v;" << x2 << " 0.000000;" << posZ << std::endl;
+                outfile << "v;" << x2 << " 0.000000;" << z2 << std::endl;
 
-                outfile << "v " << x1 << " 0 " << z1 << std::endl;
-                outfile << "v " << x2 << " 0 " << z2 << std::endl;
-                outfile << "v " << x1 << " 0 " << z2 << std::endl;
+                outfile << "v;" << posX << ";0.000000;" << posZ << std::endl;
+                outfile << "v;" << x2 << ";0.000000;" << z2 << std::endl;
+                outfile << "v;" << posX << ";0.000000;" << z2 << std::endl;
             }
         }
         outfile.close();
@@ -67,7 +75,7 @@ public:
 
 int main() {
     // Generate models
-    Generator::generatePlane(2.0f, 2.0f, 10, 10, "plane.3d");
+    Generator::generatePlane(2.0f, 10, "plane.3d");
     Generator::generateBox(2.0f, 10, "box.3d");
 
     return 0;
