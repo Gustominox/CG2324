@@ -62,7 +62,7 @@ public:
         float posInicial = -(size/2);
 
 
-        //face 1 y=-size/2
+        //face 1 y=-size/2 BASE
         for (int z = 0; z < divisions; ++z) {
             for (int x = 0; x < divisions; ++x) {
                 // Define vertices for each quad in the plane
@@ -83,7 +83,8 @@ public:
             }
         }
 
-        //face 2 y = size/2
+        //face 2 y = size/2 TOPO
+        posInicial = posInicial*-1;
         for (int z = 0; z < divisions; ++z) {
             for (int x = 0; x < divisions; ++x) {
                 // Define vertices for each quad in the plane
@@ -94,13 +95,13 @@ public:
                 float x2 = posX + step;
                 float z2 = posZ + step;
 
-                outfile << "v;" << posX << ";" <<posInicial*-1<< ";"  << posZ << ";" << std::endl;;
-                outfile << "v;" << x2 << ";" <<posInicial*-1<< ";"  << posZ << ";" << std::endl;;
-                outfile << "v;" << x2 << ";" <<posInicial*-1<< ";"  << z2 << ";" << std::endl;;
+                outfile << "v;" << posX << ";" <<posInicial<< ";"  << posZ << ";" << std::endl;;
+                outfile << "v;" << x2 << ";" <<posInicial<< ";"  << posZ << ";" << std::endl;;
+                outfile << "v;" << x2 << ";" <<posInicial<< ";"  << z2 << ";" << std::endl;;
 
-                outfile << "v;" << posX << ";" <<posInicial*-1<< ";"  << posZ << ";" << std::endl;;
-                outfile << "v;" << x2 << ";" <<posInicial*-1<< ";"  << z2 << ";" << std::endl;;
-                outfile << "v;" << posX << ";" <<posInicial*-1<< ";"  << z2 << ";" << std::endl;;
+                outfile << "v;" << posX << ";" <<posInicial<< ";"  << posZ << ";" << std::endl;;
+                outfile << "v;" << x2 << ";" <<posInicial<< ";"  << z2 << ";" << std::endl;;
+                outfile << "v;" << posX << ";" <<posInicial<< ";"  << z2 << ";" << std::endl;;
             }
         }
 
@@ -204,3 +205,17 @@ int main() {
 
     return 0;
 }
+
+        +-------+
+        |       |       
+        |       |        
++-------+-------+-------+
+|       |       |       |
+|       |       |       |
++-------+-------+-------+
+        |       |       
+        |       |        
+        +-------+
+        |       |       
+        |       |        
+        +-------+
