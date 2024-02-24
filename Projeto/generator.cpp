@@ -339,3 +339,8 @@ int main() {
 
     return 0;
 }
+<<<<<<< HEAD
+=======
+
+  
+>>>>>>> d8defb0 (remove cube drawing)
