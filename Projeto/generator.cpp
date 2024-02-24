@@ -31,13 +31,13 @@ public:
                 float x2 = posX + step;
                 float z2 = posZ + step;
 
-                outfile << "v;" << posX << "0.000000;" << posZ << ";" << std::endl;;
-                outfile << "v;" << x2 << "0.000000;" << posZ << ";" << std::endl;;
-                outfile << "v;" << x2 << "0.000000;" << z2 << ";" << std::endl;;
+                outfile << "v;" << posX << ";0.000000;" << posZ << ";" << std::endl;;
+                outfile << "v;" << x2 << ";0.000000;" << posZ << ";" << std::endl;;
+                outfile << "v;" << x2 << ";0.000000;" << z2 << ";" << std::endl;;
 
-                outfile << "v;" << posX << "0.000000;" << posZ << ";" << std::endl;;
-                outfile << "v;" << x2 << "0.000000;" << z2 << ";" << std::endl;;
-                outfile << "v;" << posX << "0.000000;" << z2 << ";" << std::endl;;
+                outfile << "v;" << posX << ";0.000000;" << posZ << ";" << std::endl;;
+                outfile << "v;" << x2 << ";0.000000;" << z2 << ";" << std::endl;;
+                outfile << "v;" << posX << ";0.000000;" << z2 << ";" << std::endl;;
             }
         }
         outfile.close();
