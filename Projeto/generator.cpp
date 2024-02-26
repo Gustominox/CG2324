@@ -138,13 +138,13 @@ public:
                 float z2 = posZ + step;
 
                 outfile << "v;" << posInicial << ";" <<posY<< ";" << posZ << ";" << std::endl;;
-                outfile << "v;" << posInicial << ";" <<y2<< ";"  << posZ << ";" << std::endl;;
                 outfile << "v;" << posInicial << ";" <<y2<< ";"  << z2 << ";" << std::endl;;
+                outfile << "v;" << posInicial << ";" <<y2<< ";"  << posZ << ";" << std::endl;;
 
 
                 outfile << "v;" << posInicial*-1<< ";" <<posY<< ";"  << posZ << ";" << std::endl;;
-                outfile << "v;" << posInicial*-1<< ";" <<y2<< ";"  << z2 << ";" << std::endl;;
                 outfile << "v;" << posInicial*-1<< ";" <<posY<< ";"  << z2 << ";" << std::endl;;
+                outfile << "v;" << posInicial*-1<< ";" <<y2<< ";"  << z2 << ";" << std::endl;;
 
             }
         }
