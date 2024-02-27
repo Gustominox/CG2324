@@ -204,6 +204,129 @@ public:
         outfile.close();
         std::cout << "Box model generated and saved to " << filename << std::endl;
     }
+
+    static void generateCone(float radius, float height, int slices, int stacks, const std::string& filename){
+        std::ofstream outfile(filename);
+        if (!outfile.is_open()) {
+            std::cerr << "Error: Unable to open file " << filename << std::endl;
+            return;
+        }
+
+        // Set precision to 6 decimals
+        outfile << std::fixed << std::setprecision(6);  
+
+        //altura de cada stack
+        float alt = height/stacks;
+
+        //diferenca entre os raios de diferentes niveis
+        float r_step = radius/stacks;
+
+        //stacks
+        for(int j = 0; j < stacks; j++){
+            //calculo dos y's da stack
+            float y0 = j * alt;
+            float y1 = (j+1) * alt;
+
+            //slices
+            for(int i = 0; i < slices; i++){
+                //angulo para "desenhar" a "base/topo" da stack
+                float alpha = i * (2*M_PI / slices);
+                float alpha2 = (i+1) * (2*M_PI / slices);
+
+			    //pontos inferiores do trapezio
+			    float radius1 = radius -(j*r_step);
+			    float x1 = radius1*sin(alpha);
+			    float z1 = radius1*cos(alpha);
+
+			    float x2 = radius1*sin(alpha2);
+			    float z2 = radius1*cos(alpha2);
+
+			    //pontos superiores do trapezio
+			    float radius2 = radius - ((j+1)*(r_step));
+			    float x3 = radius2*sin(alpha);
+			    float z3 = radius2*cos(alpha);
+
+			    float x4 = radius2*sin(alpha2);
+			    float z4 = radius2*cos(alpha2);
+
+                //base
+                if(j == 0){
+                    outfile << "v;" << "0.000000" << ";0.000000;" << "0.000000" << ";" << std::endl;;
+                    outfile << "v;" << x2 << ";" <<y0<< ";"  << z2 << ";" << std::endl;;
+                    outfile << "v;" << x1 << ";" <<y0<< ";"  << z1 << ";" << std::endl;;
+                }
+
+                //triangulo de baixo do trapezio
+                outfile << "v;" << x1 << ";" <<y0<<  ";" << z1 << ";" << std::endl;;
+                outfile << "v;" << x2 << ";" <<y0<< ";"  << z2 << ";" << std::endl;;
+                outfile << "v;" << x3 << ";" <<y1<< ";"  << z3 << ";" << std::endl;;
+                
+                //triangulo de cima do trapezio
+                if(j != stacks-1){
+                    outfile << "v;" << x2 << ";" <<y0<<  ";" << z2 << ";" << std::endl;;
+                    outfile << "v;" << x4 << ";" <<y1<< ";"  << z4 << ";" << std::endl;;
+                    outfile << "v;" << x3 << ";" <<y1<< ";"  << z3 << ";" << std::endl;;
+
+                }
+                
+            }
+        }
+        outfile.close();
+        std::cout << "Cone model generated and saved to " << filename << std::endl;
+    }
+    static void generateSphere(float radius, int slices, int stacks, const std::string& filename){
+        std::ofstream outfile(filename);
+        if (!outfile.is_open()) {
+            std::cerr << "Error: Unable to open file " << filename << std::endl;
+            return;
+        }
+
+        // Set precision to 6 decimals
+        outfile << std::fixed << std::setprecision(6);  
+
+        for (int i = 0; i < stacks; ++i) {
+        float beta = i * (M_PI / stacks);
+        float beta2 = (i + 1) * (M_PI / stacks);
+
+            for (int j = 0; j < slices; ++j) {
+                float alpha = j * (2*M_PI / stacks);
+                float alpha2 = (j + 1) * (2*M_PI / stacks);
+
+                // Vertices
+		    	//comeca pelo ponto (0,r,0), cos(0)=1
+                float x0 = radius * cos(alpha) * sin(beta);
+                float y0 = radius * cos(beta);
+                float z0 = radius * sin(alpha) * sin(beta);
+
+                float x1 = radius * cos(alpha2) * sin(beta);
+                float y1 = radius * cos(beta);
+                float z1 = radius * sin(alpha2) * sin(beta);
+
+                float x2 = radius * cos(alpha) * sin(beta2);
+                float y2 = radius * cos(beta2);
+                float z2 = radius * sin(alpha) * sin(beta2);
+
+                float x3 = radius * cos(alpha2) * sin(beta2);
+                float y3 = radius * cos(beta2);
+                float z3 = radius * sin(alpha2) * sin(beta2);
+
+		    	if(i !=  0){
+                    outfile << "v;" << x0 << ";" <<y0<<  ";" << z0 << ";" << std::endl;;
+                    outfile << "v;" << x2 << ";" <<y2<< ";"  << z2 << ";" << std::endl;;
+                    outfile << "v;" << x1 << ";" <<y1<< ";"  << z1 << ";" << std::endl;;		    		
+		    	}
+
+		    	if(i != stacks-1){
+                    outfile << "v;" << x1 << ";" <<y1<<  ";" << z1 << ";" << std::endl;;
+                    outfile << "v;" << x2 << ";" <<y2<< ";"  << z2 << ";" << std::endl;;
+                    outfile << "v;" << x3 << ";" <<y3<< ";"  << z3 << ";" << std::endl;;
+		    	}
+            }
+        }
+        outfile.close();
+        std::cout << "Sphere model generated and saved to " << filename << std::endl;
+    
+    }
    
 };
 
@@ -211,6 +334,8 @@ int main() {
     // Generate models
     Generator::generatePlane(2.0f, 10, "plane.3d");
     Generator::generateBox(2.0f, 2, "box.3d");
+    Generator::generateCone(1.0f, 2.0f, 4, 3, "cone.3d");
+    Generator::generateSphere(1.0f, 10, 10, "sphere.3d");
 
     return 0;
 }
