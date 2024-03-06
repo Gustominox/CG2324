@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <cstdlib>
 #include <vector>
+#include <iostream>
+#include <fstream>
+#include <sstream>
 
 #ifdef __APPLE__
 #include <GLUT/glut.h>
@@ -331,6 +334,32 @@ void createBuffer(float radius, float height, int sides) {
 
 }
 
+void lerFicheiro(const std::string& path) {
+	std::ifstream arquivo(path);
+	if (!arquivo.is_open()) {
+		std::cerr << "Erro ao abrir o arquivo." << std::endl;
+		return;
+	}
+
+	std::string linha;
+	std::vector<float> vertexB;
+	while (std::getline(arquivo, linha)) {
+		//std::cout << "Linha lida: " << linha << std::endl; // Mensagem de depuração
+		std::istringstream iss(linha);
+		char descartavel;
+		float num1, num2, num3;
+		iss >> descartavel; // Descarta o primeiro caractere
+		iss.ignore(); // Ignora o ponto e vírgula
+		iss >> num1; // Lê o primeiro número
+		iss.ignore(); // Ignora o ponto e vírgula
+		iss >> num2; // Lê o segundo número
+		iss.ignore(); // Ignora o ponto e vírgula
+		iss >> num3; // Lê o terceiro número
+		vertexB.push_back(num1);
+		vertexB.push_back(num2);
+		vertexB.push_back(num3);
+	}
+}
 
 int main(int argc, char **argv) {
 
