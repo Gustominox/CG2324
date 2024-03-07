@@ -4,6 +4,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include "pugixml.hpp"
 
 #ifdef __APPLE__
 #include <GLUT/glut.h>
@@ -189,7 +190,7 @@ void renderScene(void) {
 
 void processKeys(unsigned char key, int xx, int yy) {
 
-	// Mudar modos de visualização
+	// Mudar modos de visualizaï¿½ï¿½o
 	if (key == '1') {
 		mode = GL_FILL;
 	}
@@ -324,10 +325,10 @@ void createBuffer(float radius, float height, int sides) {
 	
 	glBindBuffer(GL_ARRAY_BUFFER, vertices);
 	
-	glBufferData(GL_ARRAY_BUFFER, // tipo do buffer, só é relevante na altura do desenho
+	glBufferData(GL_ARRAY_BUFFER, // tipo do buffer, sï¿½ ï¿½ relevante na altura do desenho
 				 sizeof(float) * vertexB.size(), // tamanho do vector em bytes
 				 vertexB.data(), // os dados do array associado ao vector
-				 GL_STATIC_DRAW); // indicativo da utilização (estático e para desenho)
+				 GL_STATIC_DRAW); // indicativo da utilizaï¿½ï¿½o (estï¿½tico e para desenho)
 
 
 
@@ -344,24 +345,55 @@ void lerFicheiro(const std::string& path) {
 	std::string linha;
 	std::vector<float> vertexB;
 	while (std::getline(arquivo, linha)) {
-		//std::cout << "Linha lida: " << linha << std::endl; // Mensagem de depuração
+		//std::cout << "Linha lida: " << linha << std::endl; // Mensagem de depuraï¿½ï¿½o
 		std::istringstream iss(linha);
 		char descartavel;
 		float num1, num2, num3;
 		iss >> descartavel; // Descarta o primeiro caractere
-		iss.ignore(); // Ignora o ponto e vírgula
-		iss >> num1; // Lê o primeiro número
-		iss.ignore(); // Ignora o ponto e vírgula
-		iss >> num2; // Lê o segundo número
-		iss.ignore(); // Ignora o ponto e vírgula
-		iss >> num3; // Lê o terceiro número
+		iss.ignore(); // Ignora o ponto e vï¿½rgula
+		iss >> num1; // Lï¿½ o primeiro nï¿½mero
+		iss.ignore(); // Ignora o ponto e vï¿½rgula
+		iss >> num2; // Lï¿½ o segundo nï¿½mero
+		iss.ignore(); // Ignora o ponto e vï¿½rgula
+		iss >> num3; // Lï¿½ o terceiro nï¿½mero
 		vertexB.push_back(num1);
 		vertexB.push_back(num2);
 		vertexB.push_back(num3);
 	}
 }
+void printNode(const pugi::xml_node& node, int depth = 0) {
+	// Output node name with indentation based on depth
+	std::cout << std::string(depth * 2, ' ') << "Node: " << node.name() << std::endl;
+
+	// Print attributes of the node
+	for (pugi::xml_attribute attr : node.attributes()) {
+		std::cout << std::string(depth * 2 + 2, ' ') << "Attribute: " << attr.name() << " = " << attr.value() << std::endl;
+	}
+
+	// Output node value if any
+	const char* value = node.child_value();
+	if (value && std::strlen(value) > 0) {
+		std::cout << std::string(depth * 2 + 2, ' ') << "Value: " << value << std::endl;
+	}
+
+	// Recursively print children
+	for (pugi::xml_node child : node.children()) {
+		printNode(child, depth + 1);
+	}
+}
 
 int main(int argc, char **argv) {
+
+	pugi::xml_document doc;
+
+	pugi::xml_parse_result result = doc.load_file("C:\\Users\\gimez\\Desktop\\CG2324\\Projeto\\config_example.xml");
+
+	// Start printing from the root node
+	printNode(doc.root());
+
+	
+
+
 
 // init GLUT and the window
 	glutInit(&argc, argv);
