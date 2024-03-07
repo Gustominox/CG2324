@@ -313,14 +313,14 @@ public:
 
 		    	if(i !=  0){
                     outfile << "v;" << x0 << ";" <<y0<<  ";" << z0 << ";" << std::endl;;
-                    outfile << "v;" << x2 << ";" <<y2<< ";"  << z2 << ";" << std::endl;;
-                    outfile << "v;" << x1 << ";" <<y1<< ";"  << z1 << ";" << std::endl;;		    		
+                    outfile << "v;" << x1 << ";" <<y1<< ";"  << z1 << ";" << std::endl;;
+		    outfile << "v;" << x2 << ";" <<y2<< ";"  << z2 << ";" << std::endl;;
 		    	}
 
 		    	if(i != stacks-1){
                     outfile << "v;" << x1 << ";" <<y1<<  ";" << z1 << ";" << std::endl;;
-                    outfile << "v;" << x2 << ";" <<y2<< ";"  << z2 << ";" << std::endl;;
                     outfile << "v;" << x3 << ";" <<y3<< ";"  << z3 << ";" << std::endl;;
+		    outfile << "v;" << x2 << ";" <<y2<< ";"  << z2 << ";" << std::endl;;
 		    	}
             }
         }
