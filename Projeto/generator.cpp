@@ -2,6 +2,7 @@
 #include <fstream>
 #include <iomanip> 
 #include <cmath>
+#include <cstring>
 
 class Generator {
 public:
@@ -330,12 +331,32 @@ public:
    
 };
 
-int main() {
+int main(int argc, char* argv[]) {
     // Generate models
+    /*
     Generator::generatePlane(2.0f, 10, "plane.3d");
     Generator::generateBox(2.0f, 2, "box.3d");
     Generator::generateCone(1.0f, 2.0f, 4, 3, "cone.3d");
-    Generator::generateSphere(1.0f, 10, 10, "sphere.3d");
+    Generator::generateSphere(1.0f, 10, 10, "sphere.3d"); */
+    if (argc == 5) {
+        if (strcmp(argv[1], "plane") == 0) {
+            Generator::generatePlane(std::stof(argv[2]), std::stoi(argv[3]), argv[4]);
+        }
+        if (strcmp(argv[1], "box") == 0) {
+            Generator::generateBox(std::stof(argv[2]), std::stoi(argv[3]), argv[4]);
+        }
+    }
+    if (argc == 6) {
+        if (strcmp(argv[1], "sphere") == 0) {
+            Generator::generateSphere(std::stof(argv[2]), std::stoi(argv[3]), std::stoi(argv[4]), argv[5]);
+        }
+    }
+    if (argc == 7) {
+        if (strcmp(argv[1], "cone") == 0) {
+            Generator::generateCone(std::stof(argv[2]), std::stof(argv[3]), std::stoi(argv[4]),
+                                      std::stoi(argv[5]), argv[6]);
+        }
+    }
 
     return 0;
 }
