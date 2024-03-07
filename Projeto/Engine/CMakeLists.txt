@@ -5,7 +5,11 @@ PROJECT(CG-2324)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-add_executable(${PROJECT_NAME} main.cpp)
+# Add main.cpp and additional source files
+add_executable(${PROJECT_NAME} main.cpp pugixml.cpp)
+
+# Add header files directory to include path
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 find_package(OpenGL REQUIRED)
 include_directories(${OpenGL_INCLUDE_DIRS})
