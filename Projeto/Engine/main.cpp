@@ -18,9 +18,10 @@
 
 float alfa = 0.0f, beta = 0.0f, radius = 5.0f;
 float camX, camY, camZ;
+float lookAtX, lookAtY, lookAtZ;
+float upX, upY, upZ;
+int WINDOW_WIDTH ,WINDOW_HEIGHT;
 
-GLuint verticeCount;
-GLuint vertices = 0;
 float frames;
 
 
@@ -57,96 +58,6 @@ void changeSize(int w, int h) {
 	glMatrixMode(GL_MODELVIEW);
 }
 
-
-/*----------------------------------------------------------------------------------- 
-	Draw Cylinder with strips and fans
-
-	  parameters: radius, height, sides
-
------------------------------------------------------------------------------------*/
-
-
-void cylinder0(float radius, float height, int sides) {
-
-	int i;
-	float step;
-
-	step = 360.0/sides;
-
-	glColor3f(1,0,0);
-	glBegin(GL_TRIANGLE_FAN);
-
-		glVertex3f(0,height*0.5,0);
-		for (i=0; i <= sides; i++) {
-			glVertex3f(cos(i * step * M_PI/180.0)*radius,height*0.5,-sin(i * step *M_PI/180.0)*radius);
-		}
-	glEnd();
-
-	glColor3f(0,1,0);
-	glBegin(GL_TRIANGLE_FAN);
-
-		glVertex3f(0,-height*0.5,0);
-		for (i=0; i <= sides; i++) {
-			glVertex3f(cos(i * step * M_PI/180.0)*radius,-height*0.5,sin(i * step *M_PI/180.0)*radius);
-		}
-	glEnd();
-
-	glColor3f(0,0,1);
-	glBegin(GL_TRIANGLE_STRIP);
-
-		for (i=0; i <= sides; i++) {
-			glVertex3f(cos(i * step * M_PI/180.0)*radius, height*0.5,-sin(i * step *M_PI/180.0)*radius);
-			glVertex3f(cos(i * step * M_PI/180.0)*radius,-height*0.5,-sin(i * step *M_PI/180.0)*radius);
-		}
-	glEnd();
-}
-
-
-/*-----------------------------------------------------------------------------------
-	Draw Cylinder
-
-		parameters: radius, height, sides
-
------------------------------------------------------------------------------------*/
-
-
-void cylinder(float radius, float height, int sides) {
-
-	int i;
-	float step;
-
-	step = 360.0 / sides;
-
-	glBegin(GL_TRIANGLES);
-
-	// top
-	for (i = 0; i < sides; i++) {
-		glVertex3f(0, height*0.5, 0);
-		glVertex3f(cos(i * step * M_PI / 180.0)*radius, height*0.5, -sin(i * step *M_PI / 180.0)*radius);
-		glVertex3f(cos((i+1) * step * M_PI / 180.0)*radius, height*0.5, -sin((i + 1) * step *M_PI / 180.0)*radius);
-	}
-
-	// bottom
-	for (i = 0; i < sides; i++) {
-		glVertex3f(0, -height*0.5, 0);
-		glVertex3f(cos((i + 1) * step * M_PI / 180.0)*radius, -height*0.5, -sin((i + 1) * step *M_PI / 180.0)*radius);
-		glVertex3f(cos(i * step * M_PI / 180.0)*radius, -height*0.5, -sin(i * step *M_PI / 180.0)*radius);
-	}
-
-	// body
-	for (i = 0; i <= sides; i++) {
-
-		glVertex3f(cos(i * step * M_PI / 180.0)*radius, height*0.5, -sin(i * step *M_PI / 180.0)*radius);
-		glVertex3f(cos(i * step * M_PI / 180.0)*radius, -height*0.5, -sin(i * step *M_PI / 180.0)*radius);
-		glVertex3f(cos((i + 1) * step * M_PI / 180.0)*radius, height*0.5, -sin((i + 1) * step *M_PI / 180.0)*radius);
-
-		glVertex3f(cos(i * step * M_PI / 180.0)*radius, -height*0.5, -sin(i * step *M_PI / 180.0)*radius);
-		glVertex3f(cos((i + 1) * step * M_PI / 180.0)*radius, -height*0.5, -sin((i + 1) * step *M_PI / 180.0)*radius);
-		glVertex3f(cos((i + 1) * step * M_PI / 180.0)*radius, height*0.5, -sin((i + 1) * step *M_PI / 180.0)*radius);
-	}
-	glEnd();
-}
-
 float mode = GL_LINE;
 int timebase = glutGet(GLUT_ELAPSED_TIME);
 int frame=0;
@@ -160,7 +71,7 @@ void renderScene(void) {
 	glLoadIdentity();
 
 	gluLookAt(camX, camY, camZ,
-		0.0, 0.0, 0.0,
+		lookAtX, lookAtY, lookAtZ,
 		0.0f, 1.0f, 0.0f);
 
 	// desenhar cilindro VBO
@@ -252,89 +163,6 @@ void printInfo() {
 	printf("Page Up and Page Down control the distance from the camera to the origin");
 }
 
-void createBuffer(float radius, float height, int sides) {
-		
-	std::vector<float> vertexB;
-
-	
-	int i;
-	float step;
-
-	step = 360.0 / sides;
-
-
-	// top
-	for (i = 0; i < sides; i++) {
-
-		vertexB.push_back(0);
-		vertexB.push_back(height * 0.5);
-		vertexB.push_back( 0);
-
-		vertexB.push_back(cos(i * step * M_PI / 180.0) * radius);
-		vertexB.push_back(height * 0.5);
-		vertexB.push_back(-sin(i * step * M_PI / 180.0) * radius);
-
-		vertexB.push_back(cos((i + 1) * step * M_PI / 180.0) * radius);
-		vertexB.push_back(height * 0.5);
-		vertexB.push_back(-sin((i + 1) * step * M_PI / 180.0) * radius);
-	}
-	
-	// bottom
-	for (i = 0; i < sides; i++) {
-		vertexB.push_back(0);
-		vertexB.push_back(-height * 0.5);
-		vertexB.push_back(0);
-
-		vertexB.push_back(cos((i + 1) * step * M_PI / 180.0) * radius);
-		vertexB.push_back(-height * 0.5);
-		vertexB.push_back(-sin((i + 1) * step * M_PI / 180.0) * radius);
-
-		vertexB.push_back(cos(i * step * M_PI / 180.0) * radius);
-		vertexB.push_back(-height * 0.5);
-		vertexB.push_back(-sin(i * step * M_PI / 180.0) * radius);
-	}
-
-	// body
-	for (i = 0; i <= sides; i++) {
-
-		vertexB.push_back(cos(i * step * M_PI / 180.0) * radius);
-		vertexB.push_back(height * 0.5);
-		vertexB.push_back(-sin(i * step * M_PI / 180.0) * radius);
-		
-		vertexB.push_back(cos(i * step * M_PI / 180.0) * radius);
-		vertexB.push_back(-height * 0.5);
-		vertexB.push_back(-sin(i * step * M_PI / 180.0) * radius);
-		
-		vertexB.push_back(cos((i + 1) * step * M_PI / 180.0) * radius);
-		vertexB.push_back(height * 0.5);
-		vertexB.push_back(-sin((i + 1) * step * M_PI / 180.0) * radius);
-
-		vertexB.push_back(cos(i * step * M_PI / 180.0) * radius);
-		vertexB.push_back(-height * 0.5);
-		vertexB.push_back(-sin(i * step * M_PI / 180.0) * radius);
-		vertexB.push_back(cos((i + 1) * step * M_PI / 180.0) * radius);
-		vertexB.push_back(-height * 0.5);
-		vertexB.push_back(-sin((i + 1) * step * M_PI / 180.0) * radius);
-
-		vertexB.push_back(cos((i + 1) * step * M_PI / 180.0) * radius);
-		vertexB.push_back(height * 0.5); 
-		vertexB.push_back(-sin((i + 1) * step * M_PI / 180.0) * radius);
-	}
-	
-	verticeCount = vertexB.size() / 3;
-	
-	glBindBuffer(GL_ARRAY_BUFFER, vertices);
-	
-	glBufferData(GL_ARRAY_BUFFER, // tipo do buffer, s� � relevante na altura do desenho
-				 sizeof(float) * vertexB.size(), // tamanho do vector em bytes
-				 vertexB.data(), // os dados do array associado ao vector
-				 GL_STATIC_DRAW); // indicativo da utiliza��o (est�tico e para desenho)
-
-
-
-
-}
-
 void importModel(const std::string& path) {
 	std::ifstream arquivo(path);
 	if (!arquivo.is_open()) {
@@ -361,6 +189,37 @@ void importModel(const std::string& path) {
 		vertexB.push_back(num3);
 	}
 }
+
+void readConfig(const pugi::xml_node& world) {
+	// Load the XML file
+	
+
+	// Parse window attributes
+	pugi::xml_node window = world.child("window");
+	WINDOW_WIDTH = window.attribute("width").as_int();
+	WINDOW_HEIGHT = window.attribute("height").as_int();
+
+	// Parse camera attributes
+	pugi::xml_node camera = world.child("camera");
+	camX = camera.child("position").attribute("x").as_double();
+	camY = camera.child("position").attribute("y").as_double();
+	camZ = camera.child("position").attribute("z").as_double();
+	lookAtX = camera.child("lookAt").attribute("x").as_double();
+	lookAtY = camera.child("lookAt").attribute("y").as_double();
+	lookAtZ = camera.child("lookAt").attribute("z").as_double();
+	upX = camera.child("up").attribute("x").as_double();
+	upY = camera.child("up").attribute("y").as_double();
+	upZ = camera.child("up").attribute("z").as_double();
+	fov = camera.child("projection").attribute("fov").as_double();
+	nearPlane = camera.child("projection").attribute("near").as_double();
+	farPlane = camera.child("projection").attribute("far").as_double();
+
+	// Parse model attributes
+	// pugi::xml_node model = world.child("group").child("models").child("model");
+	// modelFile = model.attribute("file").as_string();
+}
+
+
 void printNode(const pugi::xml_node& node, int depth = 0) {
 	// Output node name with indentation based on depth
 	std::cout << std::string(depth * 2, ' ') << "Node: " << node.name() << std::endl;
@@ -393,8 +252,11 @@ int main(int argc, char **argv) {
 	// Start printing from the root node
 	printNode(doc.root());
 
-	
 
+	// Access the root node
+	pugi::xml_node world = doc.child("world");
+
+	readConfig(world);
 
 
 // init GLUT and the window
