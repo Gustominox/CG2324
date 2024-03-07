@@ -335,7 +335,7 @@ void createBuffer(float radius, float height, int sides) {
 
 }
 
-void lerFicheiro(const std::string& path) {
+void importModel(const std::string& path) {
 	std::ifstream arquivo(path);
 	if (!arquivo.is_open()) {
 		std::cerr << "Erro ao abrir o arquivo." << std::endl;
