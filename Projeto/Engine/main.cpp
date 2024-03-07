@@ -15,12 +15,19 @@
 
 #define _USE_MATH_DEFINES
 #include <math.h>
-
+ 
+#define MAX_MODELS 10
 
 float camX, camY, camZ;
 float lookAtX, lookAtY, lookAtZ;
 float upX, upY, upZ;
 int WINDOW_WIDTH ,WINDOW_HEIGHT;
+
+int iModel [MAX_MODELS];
+int modelVert[MAX_MODELS];
+
+std::vector<float> models[MAX_MODELS];
+int num_models = 0;
 
 double fov, nearPlane, farPlane;
 
@@ -94,9 +101,16 @@ void renderScene(void) {
 				upX, upY, upZ
 			);
 
-	// desenhar
-
+	// desenhar axis
 	drawAxis();
+
+	// desenhar cilindro VBO
+	for (int i = 0; i < num_models; i++)
+	{
+		glBindBuffer(GL_ARRAY_BUFFER, iModel[i]); // ESCOLHE O BUFFER NA POS VERTICES
+		glVertexPointer(3, GL_FLOAT, 0, 0);		 // dizer qual é a config do buffer
+		glDrawArrays(GL_TRIANGLES, 0, modelVert[i]); // como se desenha o buffer
+	}
 
 	// calcular frames 
 	frame++;
@@ -155,6 +169,7 @@ void printInfo() {
 
 void importModel(const std::string& path) {
 	std::ifstream arquivo(path);
+
 	if (!arquivo.is_open()) {
 		std::cerr << "Erro ao abrir o arquivo." << std::endl;
 		return;
@@ -178,6 +193,17 @@ void importModel(const std::string& path) {
 		vertexB.push_back(num2);
 		vertexB.push_back(num3);
 	}
+
+	modelVert[num_models] = vertexB.size() / 3;
+
+	glBindBuffer(GL_ARRAY_BUFFER, iModel[num_models]);
+
+	glBufferData(GL_ARRAY_BUFFER, // tipo do buffer, s� � relevante na altura do desenho
+		sizeof(float) * vertexB.size(), // tamanho do vector em bytes
+		vertexB.data(), // os dados do array associado ao vector
+		GL_STATIC_DRAW); // indicativo da utiliza��o (est�tico e para desenho)
+
+	num_models++;
 }
 
 void readConfig(const pugi::xml_node& world) {
@@ -208,9 +234,6 @@ void readConfig(const pugi::xml_node& world) {
 	nearPlane = camera.child("projection").attribute("near").as_double();
 	farPlane = camera.child("projection").attribute("far").as_double();
 
-	// Parse model attributes
-	// pugi::xml_node model = world.child("group").child("models").child("model");
-	// modelFile = model.attribute("file").as_string();
 }
 
 
@@ -252,8 +275,7 @@ int main(int argc, char **argv) {
 
 	readConfig(world);
 
-
-
+	importModel("plane.3d");
 
 // init GLUT and the window
 	glutInit(&argc, argv);
