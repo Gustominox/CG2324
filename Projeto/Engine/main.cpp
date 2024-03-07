@@ -16,20 +16,39 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-float alfa = 0.0f, beta = 0.0f, radius = 5.0f;
+
 float camX, camY, camZ;
 float lookAtX, lookAtY, lookAtZ;
 float upX, upY, upZ;
 int WINDOW_WIDTH ,WINDOW_HEIGHT;
 
+double fov, nearPlane, farPlane;
+
 float frames;
 
+float mode = GL_LINE;
+int timebase = glutGet(GLUT_ELAPSED_TIME);
+int frame = 0;
 
-void spherical2Cartesian() {
 
-	camX = radius * cos(beta) * sin(alfa);
-	camY = radius * sin(beta);
-	camZ = radius * cos(beta) * cos(alfa);
+void drawAxis() {
+	glBegin(GL_LINES);
+	// X axis in red
+	glColor3f(1.0f, 0.0f, 0.0f);
+	glVertex3f(
+		-100.0f, 0.0f, 0.0f);
+	glVertex3f(100.0f, 0.0f, 0.0f);
+	// Y Axis in Green
+	glColor3f(0.0f, 1.0f, 0.0f);
+	glVertex3f(0.0f,
+		-100.0f, 0.0f);
+	glVertex3f(0.0f, 100.0f, 0.0f);
+	// Z Axis in Blue
+	glColor3f(0.0f, 0.0f, 1.0f);
+	glVertex3f(0.0f, 0.0f,
+		-100.0f);
+	glVertex3f(0.0f, 0.0f, 100.0f);
+	glEnd();
 }
 
 
@@ -52,17 +71,17 @@ void changeSize(int w, int h) {
     glViewport(0, 0, w, h);
 
 	// Set perspective
-	gluPerspective(45.0f ,ratio, 1.0f ,1000.0f);
+	gluPerspective(fov ,ratio, nearPlane,farPlane);
 
 	// return to the model view matrix mode
 	glMatrixMode(GL_MODELVIEW);
 }
 
-float mode = GL_LINE;
-int timebase = glutGet(GLUT_ELAPSED_TIME);
-int frame=0;
+
 
 void renderScene(void) {
+
+	
 
 	// clear buffers
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -70,14 +89,14 @@ void renderScene(void) {
 	// set the camera
 	glLoadIdentity();
 
-	gluLookAt(camX, camY, camZ,
-		lookAtX, lookAtY, lookAtZ,
-		0.0f, 1.0f, 0.0f);
+	gluLookAt(	camX, camY, camZ,
+				lookAtX, lookAtY, lookAtZ,
+				upX, upY, upZ
+			);
 
-	// desenhar cilindro VBO
-	glBindBuffer(GL_ARRAY_BUFFER, vertices);
-	glVertexPointer(3, GL_FLOAT, 0, 0);
-	glDrawArrays(GL_TRIANGLES, 0, verticeCount);
+	// desenhar
+
+	drawAxis();
 
 	// calcular frames 
 	frame++;
@@ -120,35 +139,6 @@ void processKeys(unsigned char key, int xx, int yy) {
 
 void processSpecialKeys(int key, int xx, int yy) {
 
-	switch (key) {
-
-	case GLUT_KEY_RIGHT:
-		alfa -= 0.1; break;
-
-	case GLUT_KEY_LEFT:
-		alfa += 0.1; break;
-
-	case GLUT_KEY_UP:
-		beta += 0.1f;
-		if (beta > 1.5f)
-			beta = 1.5f;
-		break;
-
-	case GLUT_KEY_DOWN:
-		beta -= 0.1f;
-		if (beta < -1.5f)
-			beta = -1.5f;
-		break;
-
-	case GLUT_KEY_PAGE_DOWN: radius -= 0.1f;
-		if (radius < 0.1f)
-			radius = 0.1f;
-		break;
-
-	case GLUT_KEY_PAGE_UP: radius += 0.1f; break;
-	}
-	spherical2Cartesian();
-	glutPostRedisplay();
 
 }
 
@@ -201,15 +191,19 @@ void readConfig(const pugi::xml_node& world) {
 
 	// Parse camera attributes
 	pugi::xml_node camera = world.child("camera");
+
 	camX = camera.child("position").attribute("x").as_double();
 	camY = camera.child("position").attribute("y").as_double();
 	camZ = camera.child("position").attribute("z").as_double();
+	
 	lookAtX = camera.child("lookAt").attribute("x").as_double();
 	lookAtY = camera.child("lookAt").attribute("y").as_double();
 	lookAtZ = camera.child("lookAt").attribute("z").as_double();
+	
 	upX = camera.child("up").attribute("x").as_double();
 	upY = camera.child("up").attribute("y").as_double();
 	upZ = camera.child("up").attribute("z").as_double();
+	
 	fov = camera.child("projection").attribute("fov").as_double();
 	nearPlane = camera.child("projection").attribute("near").as_double();
 	farPlane = camera.child("projection").attribute("far").as_double();
@@ -247,7 +241,7 @@ int main(int argc, char **argv) {
 
 	pugi::xml_document doc;
 
-	pugi::xml_parse_result result = doc.load_file("C:\\Users\\gimez\\Desktop\\CG2324\\Projeto\\config_example.xml");
+	pugi::xml_parse_result result = doc.load_file("C:\\Users\\gimez\\Desktop\\CG2324\\Projeto\\test_files\\test_files_phase_1\\test_1_1.xml");
 
 	// Start printing from the root node
 	printNode(doc.root());
@@ -259,11 +253,13 @@ int main(int argc, char **argv) {
 	readConfig(world);
 
 
+
+
 // init GLUT and the window
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DEPTH|GLUT_DOUBLE|GLUT_RGBA);
 	glutInitWindowPosition(100,100);
-	glutInitWindowSize(800,800);
+	glutInitWindowSize(WINDOW_WIDTH,WINDOW_HEIGHT);
 	glutCreateWindow("CG@DI-UM");
 		
 // Required callback registry 
@@ -288,12 +284,10 @@ int main(int argc, char **argv) {
 	glEnable(GL_CULL_FACE);
 	glPolygonMode(GL_FRONT, GL_LINE);
 
-	spherical2Cartesian();
 
 	printInfo();
 
-	glGenBuffers(1, &vertices);
-	createBuffer(1,2,10);
+	//glGenBuffers(1, &vertices);
 
 // enter GLUT's main cycle
 	glutMainLoop();
