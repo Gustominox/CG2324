@@ -382,6 +382,8 @@ void printNode(const pugi::xml_node& node, int depth = 0) {
 	}
 }
 
+std::string CONFIGS_DIR = "C:\\Users\\gimez\\Desktop\\CG2324\\Projeto\\test_files\\test_files_phase_1";
+
 int main(int argc, char **argv) {
 
 	pugi::xml_document doc;
