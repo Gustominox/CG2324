@@ -209,6 +209,10 @@ void importModel(const std::string& path) {
 	num_models++;
 }
 
+// Vector to store model file paths
+std::vector<std::string> modelFiles;
+
+
 void readConfig(const pugi::xml_node& world) {
 	// Load the XML file
 	
@@ -237,6 +241,12 @@ void readConfig(const pugi::xml_node& world) {
 	nearPlane = camera.child("projection").attribute("near").as_double();
 	farPlane = camera.child("projection").attribute("far").as_double();
 
+	
+	// Iterate over each model and store the file paths
+	for (pugi::xml_node model : world.child("group").child("models").children("model")) {
+		std::string modelFile = model.attribute("file").as_string();
+		modelFiles.push_back("models\\" + modelFile);
+	}
 }
 
 
@@ -314,10 +324,10 @@ int main(int argc, char **argv) {
 
 	}
 
-	importModel("models\\box.3d");
-	//importModel("models\\plane_2_3.3d");
-
-
+	for (const std::string& filePath : modelFiles) {
+		importModel(filePath);
+	}
+	
 // enter GLUT's main cycle
 	glutMainLoop();
 
