@@ -295,21 +295,21 @@ public:
 
                 // Vertices
 		    	//comeca pelo ponto (0,r,0), cos(0)=1
-                float x0 = radius * cos(alpha) * sin(beta);
+                float x0 = radius * sin(alpha) * sin(beta);
                 float y0 = radius * cos(beta);
-                float z0 = radius * sin(alpha) * sin(beta);
+                float z0 = radius * cos(alpha) * sin(beta);
 
-                float x1 = radius * cos(alpha2) * sin(beta);
+                float x1 = radius * sin(alpha2) * sin(beta);
                 float y1 = radius * cos(beta);
-                float z1 = radius * sin(alpha2) * sin(beta);
+                float z1 = radius * cos(alpha2) * sin(beta);
 
-                float x2 = radius * cos(alpha) * sin(beta2);
+                float x2 = radius * sin(alpha) * sin(beta2);
                 float y2 = radius * cos(beta2);
-                float z2 = radius * sin(alpha) * sin(beta2);
+                float z2 = radius * cos(alpha) * sin(beta2);
 
-                float x3 = radius * cos(alpha2) * sin(beta2);
+                float x3 = radius * sin(alpha2) * sin(beta2);
                 float y3 = radius * cos(beta2);
-                float z3 = radius * sin(alpha2) * sin(beta2);
+                float z3 = radius * cos(alpha2) * sin(beta2);
 
 		    	if(i !=  0){
                     outfile << "v;" << x0 << ";" <<y0<<  ";" << z0 << ";" << std::endl;;
