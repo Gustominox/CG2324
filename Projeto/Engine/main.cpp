@@ -18,6 +18,8 @@
  
 #define MAX_MODELS 10
 
+std::string CONFIGS_DIR = "C:\\Users\\gimez\\Desktop\\CG2324\\Projeto\\test_files\\test_files_phase_1";
+
 float camX, camY, camZ;
 float lookAtX, lookAtY, lookAtZ;
 float upX, upY, upZ;
@@ -26,7 +28,6 @@ int WINDOW_WIDTH ,WINDOW_HEIGHT;
 GLuint iModel[MAX_MODELS] = {};
 GLuint modelVert[MAX_MODELS];
 
-std::vector<float> models[MAX_MODELS];
 int num_models = 0;
 
 double fov, nearPlane, farPlane;
@@ -273,13 +274,14 @@ void printNode(const pugi::xml_node& node, int depth = 0) {
 	}
 }
 
-std::string CONFIGS_DIR = "C:\\Users\\gimez\\Desktop\\CG2324\\Projeto\\test_files\\test_files_phase_1";
 
 int main(int argc, char **argv) {
 
-	pugi::xml_document doc;
-	pugi::xml_parse_result result = doc.load_file("C:\\Users\\gimez\\Desktop\\CG2324\\Projeto\\test_files\\test_files_phase_1\\test_1_4.xml");
+	std::string xmlFilePath = CONFIGS_DIR + "\\" + "test_1_5.xml";
 
+	// Load the XML file
+	pugi::xml_document doc;
+	pugi::xml_parse_result result = doc.load_file(xmlFilePath.c_str());
 	// Start printing from the root node
 	printNode(doc.root());
 
