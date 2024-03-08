@@ -23,8 +23,8 @@ float lookAtX, lookAtY, lookAtZ;
 float upX, upY, upZ;
 int WINDOW_WIDTH ,WINDOW_HEIGHT;
 
-int iModel [MAX_MODELS];
-int modelVert[MAX_MODELS];
+GLuint iModel[MAX_MODELS] = {};
+GLuint modelVert[MAX_MODELS];
 
 std::vector<float> models[MAX_MODELS];
 int num_models = 0;
@@ -55,6 +55,8 @@ void drawAxis() {
 	glVertex3f(0.0f, 0.0f,
 		-100.0f);
 	glVertex3f(0.0f, 0.0f, 100.0f);
+	glColor3f(1.0f, 1.0f, 1.0f);
+
 	glEnd();
 }
 
@@ -104,9 +106,10 @@ void renderScene(void) {
 	// desenhar axis
 	drawAxis();
 
-	// desenhar cilindro VBO
+	// desenhar models VBO's
 	for (int i = 0; i < num_models; i++)
 	{
+
 		glBindBuffer(GL_ARRAY_BUFFER, iModel[i]); // ESCOLHE O BUFFER NA POS VERTICES
 		glVertexPointer(3, GL_FLOAT, 0, 0);		 // dizer qual é a config do buffer
 		glDrawArrays(GL_TRIANGLES, 0, modelVert[i]); // como se desenha o buffer
@@ -237,6 +240,8 @@ void readConfig(const pugi::xml_node& world) {
 }
 
 
+
+
 void printNode(const pugi::xml_node& node, int depth = 0) {
 	// Output node name with indentation based on depth
 	std::cout << std::string(depth * 2, ' ') << "Node: " << node.name() << std::endl;
@@ -263,19 +268,13 @@ std::string CONFIGS_DIR = "C:\\Users\\gimez\\Desktop\\CG2324\\Projeto\\test_file
 int main(int argc, char **argv) {
 
 	pugi::xml_document doc;
-
-	pugi::xml_parse_result result = doc.load_file("C:\\Users\\gimez\\Desktop\\CG2324\\Projeto\\test_files\\test_files_phase_1\\test_1_1.xml");
+	pugi::xml_parse_result result = doc.load_file("C:\\Users\\gimez\\Desktop\\CG2324\\Projeto\\test_files\\test_files_phase_1\\test_1_4.xml");
 
 	// Start printing from the root node
 	printNode(doc.root());
 
-
-	// Access the root node
 	pugi::xml_node world = doc.child("world");
-
 	readConfig(world);
-
-	importModel("plane.3d");
 
 // init GLUT and the window
 	glutInit(&argc, argv);
@@ -309,7 +308,15 @@ int main(int argc, char **argv) {
 
 	printInfo();
 
-	//glGenBuffers(1, &vertices);
+	for (size_t i = 1; i < MAX_MODELS+1; i++)
+	{
+		glGenBuffers(i, &iModel[i-1]);
+
+	}
+
+	importModel("models\\box.3d");
+	//importModel("models\\plane_2_3.3d");
+
 
 // enter GLUT's main cycle
 	glutMainLoop();
