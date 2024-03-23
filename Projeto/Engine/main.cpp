@@ -25,10 +25,11 @@ float lookAtX, lookAtY, lookAtZ;
 float upX, upY, upZ;
 int WINDOW_WIDTH ,WINDOW_HEIGHT;
 
-GLuint iModel[MAX_MODELS] = {};
-GLuint modelVert[MAX_MODELS];
+
 
 int num_models = 0;
+// Vector to store model file paths
+std::vector<std::string> modelFiles;
 
 double fov, nearPlane, farPlane;
 
@@ -38,6 +39,48 @@ float mode = GL_LINE;
 int timebase = glutGet(GLUT_ELAPSED_TIME);
 int frame = 0;
 
+class Model {
+private:
+	GLuint bufferID;
+	int numVertices;
+
+public:
+	Model() : bufferID(0), numVertices(0) {}
+
+	// Set vertices data
+	void setVertices(int vertices) {
+		numVertices = vertices;
+	}
+
+	GLuint getIndex() {
+		return bufferID;
+	}
+
+	GLuint getNumVertices() {
+		return numVertices;
+	}
+
+	void bindBuffer(int index) {
+		// WARNING!!!
+		// Por favor nao removam o Itemp, da Seg Fault se n fizermos desta forma não mexam
+		GLuint Itemp;
+		glGenBuffers(index, &Itemp);
+		bufferID = Itemp;
+	}
+
+	// Draw model
+	void draw() {
+		if (bufferID != 0) {
+
+			glBindBuffer(GL_ARRAY_BUFFER, bufferID); // ESCOLHE O BUFFER NA POS bufferID
+			glVertexPointer(3, GL_FLOAT, 0, 0); // dizer qual é a config do buffer
+			glDrawArrays(GL_TRIANGLES, 0, numVertices);// como se desenha o buffer
+		
+		}
+	}
+};
+
+Model modelsArray[MAX_MODELS];
 
 void drawAxis() {
 	glBegin(GL_LINES);
@@ -56,6 +99,8 @@ void drawAxis() {
 	glVertex3f(0.0f, 0.0f,
 		-100.0f);
 	glVertex3f(0.0f, 0.0f, 100.0f);
+
+	// Color white 
 	glColor3f(1.0f, 1.0f, 1.0f);
 
 	glEnd();
@@ -91,8 +136,6 @@ void changeSize(int w, int h) {
 
 void renderScene(void) {
 
-	
-
 	// clear buffers
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -110,10 +153,10 @@ void renderScene(void) {
 	// desenhar models VBO's
 	for (int i = 0; i < num_models; i++)
 	{
-
-		glBindBuffer(GL_ARRAY_BUFFER, iModel[i]); // ESCOLHE O BUFFER NA POS VERTICES
-		glVertexPointer(3, GL_FLOAT, 0, 0);		 // dizer qual é a config do buffer
-		glDrawArrays(GL_TRIANGLES, 0, modelVert[i]); // como se desenha o buffer
+		/*
+		
+		*/
+		modelsArray[i].draw();
 	}
 
 	// calcular frames 
@@ -198,9 +241,11 @@ void importModel(const std::string& path) {
 		vertexB.push_back(num3);
 	}
 
-	modelVert[num_models] = vertexB.size() / 3;
+	modelsArray[num_models].setVertices(vertexB.size() / 3);
+	//modelVert[num_models] = vertexB.size() / 3;
 
-	glBindBuffer(GL_ARRAY_BUFFER, iModel[num_models]);
+	//glBindBuffer(GL_ARRAY_BUFFER, iModel[num_models]);
+	glBindBuffer(GL_ARRAY_BUFFER, modelsArray[num_models].getIndex());
 
 	glBufferData(GL_ARRAY_BUFFER, // tipo do buffer, s� � relevante na altura do desenho
 		sizeof(float) * vertexB.size(), // tamanho do vector em bytes
@@ -210,14 +255,11 @@ void importModel(const std::string& path) {
 	num_models++;
 }
 
-// Vector to store model file paths
-std::vector<std::string> modelFiles;
+
 
 
 void readConfig(const pugi::xml_node& world) {
-	// Load the XML file
 	
-
 	// Parse window attributes
 	pugi::xml_node window = world.child("window");
 	WINDOW_WIDTH = window.attribute("width").as_int();
@@ -242,8 +284,7 @@ void readConfig(const pugi::xml_node& world) {
 	nearPlane = camera.child("projection").attribute("near").as_double();
 	farPlane = camera.child("projection").attribute("far").as_double();
 
-	
-	// Iterate over each model and store the file paths
+	// Parse model paths
 	for (pugi::xml_node model : world.child("group").child("models").children("model")) {
 		std::string modelFile = model.attribute("file").as_string();
 		modelFiles.push_back("models\\" + modelFile);
@@ -253,7 +294,7 @@ void readConfig(const pugi::xml_node& world) {
 
 
 
-void printNode(const pugi::xml_node& node, int depth = 0) {
+void printConfig(const pugi::xml_node& node, int depth = 0) {
 	// Output node name with indentation based on depth
 	std::cout << std::string(depth * 2, ' ') << "Node: " << node.name() << std::endl;
 
@@ -270,7 +311,7 @@ void printNode(const pugi::xml_node& node, int depth = 0) {
 
 	// Recursively print children
 	for (pugi::xml_node child : node.children()) {
-		printNode(child, depth + 1);
+		printConfig(child, depth + 1);
 	}
 }
 
@@ -283,7 +324,7 @@ int main(int argc, char **argv) {
 	pugi::xml_document doc;
 	pugi::xml_parse_result result = doc.load_file(xmlFilePath.c_str());
 	// Start printing from the root node
-	printNode(doc.root());
+	printConfig(doc.root());
 
 	pugi::xml_node world = doc.child("world");
 	readConfig(world);
@@ -321,9 +362,9 @@ int main(int argc, char **argv) {
 	printInfo();
 
 	for (size_t i = 1; i < MAX_MODELS+1; i++)
-	{
-		glGenBuffers(i, &iModel[i-1]);
-
+	{	
+		modelsArray[i-1].bindBuffer(i);
+		//glGenBuffers(i, &iModel[i-1]);
 	}
 
 	for (const std::string& filePath : modelFiles) {
