@@ -28,8 +28,6 @@ int WINDOW_WIDTH ,WINDOW_HEIGHT;
 
 
 int num_models = 0;
-// Vector to store model file paths
-std::vector<std::string> modelFiles;
 
 double fov, nearPlane, farPlane;
 
@@ -42,6 +40,7 @@ int frame = 0;
 class Model {
 private:
 	GLuint bufferID;
+	std::string filePath;
 	int numVertices;
 
 public:
@@ -51,13 +50,56 @@ public:
 	void setVertices(int vertices) {
 		numVertices = vertices;
 	}
-
+	void setFilePath(std::string fp){
+		filePath = fp;
+	}
 	GLuint getIndex() {
 		return bufferID;
 	}
 
 	GLuint getNumVertices() {
 		return numVertices;
+	}
+
+	void importModel(int bufferIndex){
+		GLuint Itemp;
+		glGenBuffers(bufferIndex, &Itemp);
+		bufferID = Itemp;
+	std::ifstream arquivo(filePath);
+
+	if (!arquivo.is_open()) {
+		std::cerr << "Erro ao abrir o arquivo." << std::endl;
+		return;
+	}
+
+	std::string linha;
+	std::vector<float> vertexB;
+	while (std::getline(arquivo, linha)) {
+		//std::cout << "Linha lida: " << linha << std::endl; // Mensagem de depura��o
+		std::istringstream iss(linha);
+		char descartavel;
+		float num1, num2, num3;
+		iss >> descartavel; // Descarta o primeiro caractere
+		iss.ignore(); // Ignora o ponto e v�rgula
+		iss >> num1; // L� o primeiro n�mero
+		iss.ignore(); // Ignora o ponto e v�rgula
+		iss >> num2; // L� o segundo n�mero
+		iss.ignore(); // Ignora o ponto e v�rgula
+		iss >> num3; // L� o terceiro n�mero
+		vertexB.push_back(num1);
+		vertexB.push_back(num2);
+		vertexB.push_back(num3);
+	}
+
+	numVertices = vertexB.size() / 3;
+
+	glBindBuffer(GL_ARRAY_BUFFER, bufferID);
+
+	glBufferData(GL_ARRAY_BUFFER, // tipo do buffer, s� � relevante na altura do desenho
+		sizeof(float) * vertexB.size(), // tamanho do vector em bytes
+		vertexB.data(), // os dados do array associado ao vector
+		GL_STATIC_DRAW); // indicativo da utiliza��o (est�tico e para desenho)
+	
 	}
 
 	void bindBuffer(int index) {
@@ -214,48 +256,6 @@ void printInfo() {
 	printf("Page Up and Page Down control the distance from the camera to the origin");
 }
 
-void importModel(const std::string& path) {
-	std::ifstream arquivo(path);
-
-	if (!arquivo.is_open()) {
-		std::cerr << "Erro ao abrir o arquivo." << std::endl;
-		return;
-	}
-
-	std::string linha;
-	std::vector<float> vertexB;
-	while (std::getline(arquivo, linha)) {
-		//std::cout << "Linha lida: " << linha << std::endl; // Mensagem de depura��o
-		std::istringstream iss(linha);
-		char descartavel;
-		float num1, num2, num3;
-		iss >> descartavel; // Descarta o primeiro caractere
-		iss.ignore(); // Ignora o ponto e v�rgula
-		iss >> num1; // L� o primeiro n�mero
-		iss.ignore(); // Ignora o ponto e v�rgula
-		iss >> num2; // L� o segundo n�mero
-		iss.ignore(); // Ignora o ponto e v�rgula
-		iss >> num3; // L� o terceiro n�mero
-		vertexB.push_back(num1);
-		vertexB.push_back(num2);
-		vertexB.push_back(num3);
-	}
-
-	modelsArray[num_models].setVertices(vertexB.size() / 3);
-	//modelVert[num_models] = vertexB.size() / 3;
-
-	//glBindBuffer(GL_ARRAY_BUFFER, iModel[num_models]);
-	glBindBuffer(GL_ARRAY_BUFFER, modelsArray[num_models].getIndex());
-
-	glBufferData(GL_ARRAY_BUFFER, // tipo do buffer, s� � relevante na altura do desenho
-		sizeof(float) * vertexB.size(), // tamanho do vector em bytes
-		vertexB.data(), // os dados do array associado ao vector
-		GL_STATIC_DRAW); // indicativo da utiliza��o (est�tico e para desenho)
-
-	num_models++;
-}
-
-
 
 
 void readConfig(const pugi::xml_node& world) {
@@ -287,7 +287,9 @@ void readConfig(const pugi::xml_node& world) {
 	// Parse model paths
 	for (pugi::xml_node model : world.child("group").child("models").children("model")) {
 		std::string modelFile = model.attribute("file").as_string();
-		modelFiles.push_back("models\\" + modelFile);
+		modelsArray[num_models].setFilePath("models\\" + modelFile);
+
+		num_models++;
 	}
 }
 
@@ -361,15 +363,11 @@ int main(int argc, char **argv) {
 
 	printInfo();
 
-	for (size_t i = 1; i < MAX_MODELS+1; i++)
+	for (size_t i = 1; i < num_models+1; i++)
 	{	
-		modelsArray[i-1].bindBuffer(i);
-		//glGenBuffers(i, &iModel[i-1]);
+		modelsArray[i-1].importModel(i);
 	}
 
-	for (const std::string& filePath : modelFiles) {
-		importModel(filePath);
-	}
 	
 // enter GLUT's main cycle
 	glutMainLoop();
