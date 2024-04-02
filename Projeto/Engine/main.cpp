@@ -18,14 +18,12 @@
  
 #define MAX_MODELS 10
 
-std::string CONFIGS_DIR = "C:\\Users\\gimez\\Desktop\\CG2324\\Projeto\\test_files\\test_files_phase_1";
+std::string CONFIGS_DIR = "C:\\Users\\gimez\\Desktop\\CG2324\\Projeto\\test_files\\test_files_phase_2";
 
 float camX, camY, camZ;
 float lookAtX, lookAtY, lookAtZ;
 float upX, upY, upZ;
 int WINDOW_WIDTH ,WINDOW_HEIGHT;
-
-
 
 int num_models = 0;
 
@@ -257,6 +255,25 @@ void printInfo() {
 }
 
 
+void readGroup(pugi::xml_node group) {
+	for (pugi::xml_node transformation : group.child("transform").children()) {
+		for (pugi::xml_attribute attr : transformation.attributes()) {
+			std::cout << "Transformacao: " << attr.name() << " = " << attr.value() << std::endl;
+
+		}
+	}
+
+	for (pugi::xml_node model : group.child("models").children("model")) {
+		std::string modelFile = model.attribute("file").as_string();
+		modelsArray[num_models].setFilePath("models\\" + modelFile);
+		num_models++;
+	}
+	
+	for (pugi::xml_node group : group.children("group")) { //.child("models").children("model")) {
+		readGroup(group);
+	}
+}
+
 
 void readConfig(const pugi::xml_node& world) {
 	
@@ -285,14 +302,10 @@ void readConfig(const pugi::xml_node& world) {
 	farPlane = camera.child("projection").attribute("far").as_double();
 
 	// Parse model paths
-	for (pugi::xml_node model : world.child("group").child("models").children("model")) {
-		std::string modelFile = model.attribute("file").as_string();
-		modelsArray[num_models].setFilePath("models\\" + modelFile);
-
-		num_models++;
+	for (pugi::xml_node group : world.children("group")){ //.child("models").children("model")) {
+		readGroup(group);
 	}
 }
-
 
 
 
@@ -320,13 +333,13 @@ void printConfig(const pugi::xml_node& node, int depth = 0) {
 
 int main(int argc, char **argv) {
 
-	std::string xmlFilePath = CONFIGS_DIR + "\\" + "test_1_5.xml";
+	std::string xmlFilePath = CONFIGS_DIR + "\\" + "test_2_2.xml";
 
 	// Load the XML file
 	pugi::xml_document doc;
 	pugi::xml_parse_result result = doc.load_file(xmlFilePath.c_str());
 	// Start printing from the root node
-	printConfig(doc.root());
+	//printConfig(doc.root());
 
 	pugi::xml_node world = doc.child("world");
 	readConfig(world);
