@@ -113,8 +113,12 @@ public:
 	std::ifstream arquivo(filePath);
 
 	if (!arquivo.is_open()) {
-		std::cerr << "Erro ao abrir o arquivo." << std::endl;
+		std::cerr << "Erro ao abrir o arquivo. " << filePath << std::endl;
 		return;
+	}
+	else {
+		std::cout << "Abriu! " << filePath << std::endl;
+
 	}
 
 	std::string linha;
@@ -223,7 +227,11 @@ void changeSize(int w, int h) {
 	glMatrixMode(GL_MODELVIEW);
 }
 
-
+void printTransformations(const std::vector<Transformation>& transformations) {
+	for (const auto& transformation : transformations) {
+		std::cout << "Type: " << transformation.getType() << ", X: " << transformation.getX() << ", Y: " << transformation.getY() << ", Z: " << transformation.getZ() << std::endl;
+	}
+}
 
 void renderScene(void) {
 
@@ -244,10 +252,14 @@ void renderScene(void) {
 	// desenhar models VBO's
 	for (int i = 0; i < num_models; i++)
 	{
-		/*
-		
-		*/
+
+		std::cout << "Modelo " << i << "\n";
+		printTransformations(modelsArray[i].getTransf());
+
+		glPushMatrix();
 		modelsArray[i].draw();
+		glPopMatrix();
+
 	}
 
 	// calcular frames 
@@ -293,11 +305,7 @@ void processSpecialKeys(int key, int xx, int yy) {
 
 
 }
-void printTransformations(const std::vector<Transformation>& transformations) {
-	for (const auto& transformation : transformations) {
-		std::cout << "Type: " << transformation.getType() << ", X: " << transformation.getX() << ", Y: " << transformation.getY() << ", Z: " << transformation.getZ() << std::endl;
-	}
-}
+
 
 void printInfo() {
 
@@ -353,7 +361,6 @@ std::vector<Transformation> parseTransf(const std::string& transformations) {
 		Transformation transformation(type, x, y, z, angle);
 		transformationList.push_back(transformation);
 	}
-	printTransformations(transformationList);
 	return transformationList;
 }
 
@@ -375,7 +382,8 @@ void readGroup(pugi::xml_node group, std::string& transformationsString) {
 	}
 
 	for (pugi::xml_node childGroup : group.children("group")) {
-		readGroup(childGroup, transformationsString);
+		std::string newTStr = transformationsString;
+		readGroup(childGroup, newTStr);
 	}
 }
 
@@ -459,7 +467,7 @@ int main(int argc, char **argv) {
 		
 // Required callback registry 
 	glutDisplayFunc(renderScene);
-	glutIdleFunc(renderScene); // PARA CALCULAR OS FRAMES
+	//glutIdleFunc(renderScene); // PARA CALCULAR OS FRAMES
 	glutReshapeFunc(changeSize);
 	
 // Callback registration for keyboard processing
