@@ -35,11 +35,50 @@ float mode = GL_LINE;
 int timebase = glutGet(GLUT_ELAPSED_TIME);
 int frame = 0;
 
+class Transformation {
+private:
+	std::string type;
+	double x, y, z;
+	float angle; // New member variable for angle
+
+public:
+	Transformation(std::string type, double x, double y, double z, float angle = 0.0f)
+		: type(type), x(x), y(y), z(z), angle(angle) {} // Modified constructor to include angle parameter with default value
+
+	// Getters
+	std::string getType() const { return type; }
+	double getX() const { return x; }
+	double getY() const { return y; }
+	double getZ() const { return z; }
+	float getAngle() const { return angle; } // Getter for angle
+
+	// Setters
+	void setType(const std::string& newType) { type = newType; }
+	void setX(double newX) { x = newX; }
+	void setY(double newY) { y = newY; }
+	void setZ(double newZ) { z = newZ; }
+	void setAngle(float newAngle) { angle = newAngle; } // Setter for angle
+
+	void apply() const {
+		if (type == "translate") {
+			glTranslatef(x, y, z);
+		}
+		else if (type == "rotate") {
+			glRotatef(angle, x, y, z); // Use angle in glRotatef
+		}
+		else if (type == "scale") {
+			glScalef(x, y, z);
+		}
+	}
+};
+
+
 class Model {
 private:
 	GLuint bufferID;
 	std::string filePath;
 	int numVertices;
+	std::vector<Transformation> transformationList;
 
 public:
 	Model() : bufferID(0), numVertices(0) {}
@@ -59,6 +98,14 @@ public:
 		return numVertices;
 	}
 
+	std::vector<Transformation> getTransf() {
+		return transformationList;
+	}
+
+	void setTransf(std::vector<Transformation> tList) {
+		transformationList = tList;
+	}
+
 	void importModel(int bufferIndex){
 		GLuint Itemp;
 		glGenBuffers(bufferIndex, &Itemp);
@@ -73,7 +120,7 @@ public:
 	std::string linha;
 	std::vector<float> vertexB;
 	while (std::getline(arquivo, linha)) {
-		//std::cout << "Linha lida: " << linha << std::endl; // Mensagem de depura��o
+
 		std::istringstream iss(linha);
 		char descartavel;
 		float num1, num2, num3;
@@ -100,6 +147,8 @@ public:
 	
 	}
 
+	
+
 	void bindBuffer(int index) {
 		// WARNING!!!
 		// Por favor nao removam o Itemp, da Seg Fault se n fizermos desta forma não mexam
@@ -111,6 +160,8 @@ public:
 	// Draw model
 	void draw() {
 		if (bufferID != 0) {
+
+			for (Transformation t : transformationList) t.apply();
 
 			glBindBuffer(GL_ARRAY_BUFFER, bufferID); // ESCOLHE O BUFFER NA POS bufferID
 			glVertexPointer(3, GL_FLOAT, 0, 0); // dizer qual é a config do buffer
@@ -242,7 +293,11 @@ void processSpecialKeys(int key, int xx, int yy) {
 
 
 }
-
+void printTransformations(const std::vector<Transformation>& transformations) {
+	for (const auto& transformation : transformations) {
+		std::cout << "Type: " << transformation.getType() << ", X: " << transformation.getX() << ", Y: " << transformation.getY() << ", Z: " << transformation.getZ() << std::endl;
+	}
+}
 
 void printInfo() {
 
@@ -251,14 +306,15 @@ void printInfo() {
 	printf("Version: %s\n", glGetString(GL_VERSION));
 
 	printf("\nUse Arrows to move the camera up/down and left/right\n");
-	printf("Page Up and Page Down control the distance from the camera to the origin");
+	printf("Page Up and Page Down control the distance from the camera to the origin\n");
 }
-
+/*
 
 void readGroup(pugi::xml_node group) {
+	
 	for (pugi::xml_node transformation : group.child("transform").children()) {
 		for (pugi::xml_attribute attr : transformation.attributes()) {
-			std::cout << "Transformacao: " << attr.name() << " = " << attr.value() << std::endl;
+			std::cout << "Transformacao: " << transformation.name() << " -> " << attr.name() << " = " << attr.value() << std::endl;
 
 		}
 	}
@@ -269,11 +325,59 @@ void readGroup(pugi::xml_node group) {
 		num_models++;
 	}
 	
-	for (pugi::xml_node group : group.children("group")) { //.child("models").children("model")) {
+	for (pugi::xml_node group : group.children("group")) { 
 		readGroup(group);
 	}
 }
+*/
 
+std::vector<Transformation> parseTransf(const std::string& transformations) {
+	std::istringstream iss(transformations);
+	std::string token;
+	std::vector<Transformation> transformationList;
+
+	while (std::getline(iss, token, ';')) {
+		std::istringstream tokenStream(token);
+		std::string type;
+		double x, y, z;
+		float angle = 0.0f; // Default angle
+
+		tokenStream >> type;
+		if (type == "rotate") {
+			// If the type is "rotate", extract the angle first
+			tokenStream >> angle;
+		}
+
+		tokenStream >> std::skipws >> x >> std::skipws >> y >> std::skipws >> z;
+
+		Transformation transformation(type, x, y, z, angle);
+		transformationList.push_back(transformation);
+	}
+	printTransformations(transformationList);
+	return transformationList;
+}
+
+void readGroup(pugi::xml_node group, std::string& transformationsString) {
+	for (pugi::xml_node transformation : group.child("transform").children()) {
+		transformationsString += std::string(transformation.name()) + " ";
+		for (pugi::xml_attribute attr : transformation.attributes()) {
+			transformationsString += std::string(attr.value()) + " ";
+		}
+		transformationsString += ";";
+
+	}
+
+	for (pugi::xml_node model : group.child("models").children("model")) {
+		std::string modelFile = model.attribute("file").as_string();
+		modelsArray[num_models].setFilePath("models\\" + modelFile);
+		modelsArray[num_models].setTransf(parseTransf(transformationsString));
+		num_models++;
+	}
+
+	for (pugi::xml_node childGroup : group.children("group")) {
+		readGroup(childGroup, transformationsString);
+	}
+}
 
 void readConfig(const pugi::xml_node& world) {
 	
@@ -302,8 +406,10 @@ void readConfig(const pugi::xml_node& world) {
 	farPlane = camera.child("projection").attribute("far").as_double();
 
 	// Parse model paths
-	for (pugi::xml_node group : world.children("group")){ //.child("models").children("model")) {
-		readGroup(group);
+	for (pugi::xml_node group : world.children("group")){ 
+		std::string transfString;
+		readGroup(group,transfString);
+		std::cout << "Group: " << transfString << "\n";
 	}
 }
 
@@ -333,7 +439,7 @@ void printConfig(const pugi::xml_node& node, int depth = 0) {
 
 int main(int argc, char **argv) {
 
-	std::string xmlFilePath = CONFIGS_DIR + "\\" + "test_2_2.xml";
+	std::string xmlFilePath = CONFIGS_DIR + "\\" + "test_2_3.xml";
 
 	// Load the XML file
 	pugi::xml_document doc;
@@ -378,6 +484,8 @@ int main(int argc, char **argv) {
 
 	for (size_t i = 1; i < num_models+1; i++)
 	{	
+		// std::cout << "MODELO " << i << ": " << modelsArray[i - 1].getTransf() << "\n";
+		
 		modelsArray[i-1].importModel(i);
 	}
 
