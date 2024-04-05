@@ -18,7 +18,8 @@
  
 #define MAX_MODELS 10
 
-std::string CONFIGS_DIR = "C:\\Users\\gimez\\Desktop\\CG2324\\Projeto\\test_files\\test_files_phase_2";
+// std::string CONFIGS_DIR = "C:\\Users\\gimez\\Desktop\\CG2324\\Projeto\\test_files\\test_files_phase_2";
+std::string CONFIGS_DIR = "C:\\Users\\gimez\\Desktop\\CG2324\\Projeto\\test_files";
 
 float camX, camY, camZ;
 float lookAtX, lookAtY, lookAtZ;
@@ -306,28 +307,6 @@ void printInfo() {
 	printf("\nUse Arrows to move the camera up/down and left/right\n");
 	printf("Page Up and Page Down control the distance from the camera to the origin\n");
 }
-/*
-
-void readGroup(pugi::xml_node group) {
-	
-	for (pugi::xml_node transformation : group.child("transform").children()) {
-		for (pugi::xml_attribute attr : transformation.attributes()) {
-			std::cout << "Transformacao: " << transformation.name() << " -> " << attr.name() << " = " << attr.value() << std::endl;
-
-		}
-	}
-
-	for (pugi::xml_node model : group.child("models").children("model")) {
-		std::string modelFile = model.attribute("file").as_string();
-		modelsArray[num_models].setFilePath("models\\" + modelFile);
-		num_models++;
-	}
-	
-	for (pugi::xml_node group : group.children("group")) { 
-		readGroup(group);
-	}
-}
-*/
 
 std::vector<Transformation> parseTransf(const std::string& transformations) {
 	std::istringstream iss(transformations);
@@ -371,10 +350,13 @@ void readGroup(pugi::xml_node group, std::string& transformationsString) {
 		modelsArray[num_models].setTransf(parseTransf(transformationsString));
 		num_models++;
 	}
-
+	int j = 0;
 	for (pugi::xml_node childGroup : group.children("group")) {
+		std::cout << "Group " << j;
+		j++;
 		std::string newTStr = transformationsString;
 		readGroup(childGroup, newTStr);
+
 	}
 }
 
@@ -438,7 +420,7 @@ void printConfig(const pugi::xml_node& node, int depth = 0) {
 
 int main(int argc, char **argv) {
 
-	std::string xmlFilePath = CONFIGS_DIR + "\\" + "test_2_3.xml";
+	std::string xmlFilePath = CONFIGS_DIR + "\\" + "solar.xml";
 
 	// Load the XML file
 	pugi::xml_document doc;
