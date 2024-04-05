@@ -151,16 +151,6 @@ public:
 	
 	}
 
-	
-
-	void bindBuffer(int index) {
-		// WARNING!!!
-		// Por favor nao removam o Itemp, da Seg Fault se n fizermos desta forma não mexam
-		GLuint Itemp;
-		glGenBuffers(index, &Itemp);
-		bufferID = Itemp;
-	}
-
 	// Draw model
 	void draw() {
 		if (bufferID != 0) {
@@ -344,6 +334,7 @@ std::vector<Transformation> parseTransf(const std::string& transformations) {
 	std::string token;
 	std::vector<Transformation> transformationList;
 
+	// translate 1 2 3;rotate 90 1 2 3;scales 0.75 0.75 0.75;
 	while (std::getline(iss, token, ';')) {
 		std::istringstream tokenStream(token);
 		std::string type;
@@ -365,15 +356,15 @@ std::vector<Transformation> parseTransf(const std::string& transformations) {
 }
 
 void readGroup(pugi::xml_node group, std::string& transformationsString) {
+
+	// translate 1 2 3;rotate 90 1 2 3;scales 0.75 0.75 0.75;
 	for (pugi::xml_node transformation : group.child("transform").children()) {
 		transformationsString += std::string(transformation.name()) + " ";
 		for (pugi::xml_attribute attr : transformation.attributes()) {
 			transformationsString += std::string(attr.value()) + " ";
 		}
 		transformationsString += ";";
-
 	}
-
 	for (pugi::xml_node model : group.child("models").children("model")) {
 		std::string modelFile = model.attribute("file").as_string();
 		modelsArray[num_models].setFilePath("models\\" + modelFile);
