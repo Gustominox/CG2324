@@ -15,12 +15,13 @@
 
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include <string.h>
  
 #define MAX_MODELS 10
 
 // std::string CONFIGS_DIR = "C:\\Users\\gimez\\Desktop\\CG2324\\Projeto\\test_files\\test_files_phase_2";
-std::string CONFIGS_DIR = "C:\\Users\\gimez\\Desktop\\CG2324\\Projeto\\test_files";
-
+//std::string CONFIGS_DIR = "C:\\Users\\gimez\\Desktop\\CG2324\\Projeto\\test_files";
+std::string CONFIGS_DIR = "/home/alex/Documents/Projetos/CG2324/Projeto/test_files"; //alex
 float camX, camY, camZ;
 float lookAtX, lookAtY, lookAtZ;
 float upX, upY, upZ;
@@ -173,8 +174,8 @@ void drawAxis() {
 	// X axis in red
 	glColor3f(1.0f, 0.0f, 0.0f);
 	glVertex3f(
-		-100.0f, 0.0f, 0.0f);
-	glVertex3f(100.0f, 0.0f, 0.0f);
+		-200.0f, 0.0f, 0.0f);
+	glVertex3f(200.0f, 0.0f, 0.0f);
 	// Y Axis in Green
 	glColor3f(0.0f, 1.0f, 0.0f);
 	glVertex3f(0.0f,
@@ -346,7 +347,9 @@ void readGroup(pugi::xml_node group, std::string& transformationsString) {
 	}
 	for (pugi::xml_node model : group.child("models").children("model")) {
 		std::string modelFile = model.attribute("file").as_string();
-		modelsArray[num_models].setFilePath("models\\" + modelFile);
+		//modelsArray[num_models].setFilePath("models\\" + modelFile);	//windows
+		modelsArray[num_models].setFilePath("models/" + modelFile); 	//linux
+		
 		modelsArray[num_models].setTransf(parseTransf(transformationsString));
 		num_models++;
 	}
@@ -407,7 +410,13 @@ void printConfig(const pugi::xml_node& node, int depth = 0) {
 
 	// Output node value if any
 	const char* value = node.child_value();
-	if (value && std::strlen(value) > 0) {
+	//windows
+	//if (value && strlen(value) > 0) {
+	//	std::cout << std::string(depth * 2 + 2, ' ') << "Value: " << value << std::endl;
+	//}
+	
+	//linux
+	if (value && strlen(value) > 0) {
 		std::cout << std::string(depth * 2 + 2, ' ') << "Value: " << value << std::endl;
 	}
 
@@ -420,7 +429,9 @@ void printConfig(const pugi::xml_node& node, int depth = 0) {
 
 int main(int argc, char **argv) {
 
-	std::string xmlFilePath = CONFIGS_DIR + "\\" + "solar.xml";
+	//std::string xmlFilePath = CONFIGS_DIR + "\\" + "solar.xml"; //windows
+	std::string xmlFilePath = CONFIGS_DIR + "/" + "solar.xml"; //linux com rotacoes
+	//std::string xmlFilePath = CONFIGS_DIR + "/" + "solar_estatic.xml"; //linux sem rotacoes
 
 	// Load the XML file
 	pugi::xml_document doc;
