@@ -454,7 +454,7 @@ int main(int argc, char **argv)
 {
 
 	// std::string xmlFilePath = CONFIGS_DIR + "\\" + "solar.xml"; //windows
-	std::string xmlFilePath = CONFIGS_DIR + "/" + "solar.xml"; // linux com rotacoes
+	std::string xmlFilePath = CONFIGS_DIR + "/test_files_phase_2/" + "test_2_1.xml"; // linux com rotacoes
 	// std::string xmlFilePath = CONFIGS_DIR + "/" + "solar_estatic.xml"; //linux sem rotacoes
 
 	// Load the XML file
