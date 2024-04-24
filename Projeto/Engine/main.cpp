@@ -37,30 +37,62 @@ float mode = GL_LINE;
 int timebase = glutGet(GLUT_ELAPSED_TIME);
 int frame = 0;
 
+class Point
+{
+private:
+	double x, y, z;
+
+public:
+	Point(double _x = 0.0, double _y = 0.0, double _z = 0.0) : x(_x), y(_y), z(_z) {}
+
+	double getX() const { return x; }
+	double getY() const { return y; }
+	double getZ() const { return z; }
+
+	void setX(double _x) { x = _x; }
+	void setY(double _y) { y = _y; }
+	void setZ(double _z) { z = _z; }
+};
+
 class Transformation
 {
 private:
 	std::string type;
 	double x, y, z;
-	float angle; // New member variable for angle
+	float angle;
+	double time;
+	bool align;
+	std::vector<Point> points;
 
 public:
-	Transformation(std::string type, double x, double y, double z, float angle = 0.0f)
-		: type(type), x(x), y(y), z(z), angle(angle) {} // Modified constructor to include angle parameter with default value
+	Transformation()
+		: type(""), x(0.0), y(0.0), z(0.0), angle(0.0f), time(0.0), align(false) {}
+
+	Transformation(std::string type, double x, double y, double z, float angle = 0.0f, double time = 0.0, bool align = false)
+		: type(type), x(x), y(y), z(z), angle(angle), time(time), align(align) {}
 
 	// Getters
 	std::string getType() const { return type; }
 	double getX() const { return x; }
 	double getY() const { return y; }
 	double getZ() const { return z; }
-	float getAngle() const { return angle; } // Getter for angle
+	float getAngle() const { return angle; }
+	double getTime() const { return time; } // Getter for time
+	bool getAlign() const { return align; } // Getter for align
 
 	// Setters
 	void setType(const std::string &newType) { type = newType; }
 	void setX(double newX) { x = newX; }
 	void setY(double newY) { y = newY; }
 	void setZ(double newZ) { z = newZ; }
-	void setAngle(float newAngle) { angle = newAngle; } // Setter for angle
+	void setAngle(float newAngle) { angle = newAngle; }
+	void setTime(double newTime) { time = newTime; }   // Setter for time
+	void setAlign(bool newAlign) { align = newAlign; } // Setter for align
+
+	void addPoint(const Point &point)
+	{
+		points.push_back(point);
+	}
 
 	void apply() const
 	{
@@ -336,13 +368,83 @@ Transformation parseSingleTransformation(const std::string &token)
 	tokenStream >> type;
 	if (type == "rotate")
 	{
-		// If the type is "rotate", extract the angle first
 		tokenStream >> angle;
+	}
+	else if (type == "translate")
+	{
 	}
 
 	tokenStream >> std::skipws >> x >> std::skipws >> y >> std::skipws >> z;
 
 	return Transformation(type, x, y, z, angle);
+}
+
+Transformation parseSingleTransformationNode(pugi::xml_node transformation)
+{
+	std::string type;
+	double x, y, z;
+	float angle = 0.0f; // Default angle
+	double time = 0.0;
+	bool align = false;
+
+	type = std::string(transformation.name());
+	Transformation t;
+	t.setType(type);
+	if (type == "translate")
+	{
+		// Check if there are multiple <point> elements
+		if (transformation.child("point"))
+		{
+
+			time = transformation.attribute("time").as_double();
+			align = transformation.attribute("align").as_bool();
+			t.setTime(time);
+			t.setAlign(align);
+
+			for (pugi::xml_node point : transformation.children("point"))
+			{
+
+				double x = point.attribute("x").as_double();
+				double y = point.attribute("y").as_double();
+				double z = point.attribute("z").as_double();
+
+				t.addPoint(Point(x, y, z));
+			}
+		}
+		else
+		{
+			// Directly read x, y, z attributes
+			x = transformation.attribute("x").as_double();
+			y = transformation.attribute("y").as_double();
+			z = transformation.attribute("z").as_double();
+			t.setX(x);
+			t.setY(y);
+			t.setZ(z);
+		}
+	}
+	else if (type == "rotate")
+	{
+		angle = transformation.attribute("angle").as_float();
+		x = transformation.attribute("x").as_double();
+		y = transformation.attribute("y").as_double();
+		z = transformation.attribute("z").as_double();
+		t.setX(x);
+		t.setY(y);
+		t.setZ(z);
+		t.setAngle(angle);
+	}
+	else if (type == "scale")
+	{
+		x = transformation.attribute("x").as_double();
+		y = transformation.attribute("y").as_double();
+		z = transformation.attribute("z").as_double();
+		t.setX(x);
+		t.setY(y);
+		t.setZ(z);
+		t.setAngle(angle);
+	}
+
+	return t;
 }
 
 void readGroup(pugi::xml_node group, std::vector<Transformation> transVector)
@@ -451,7 +553,7 @@ int main(int argc, char **argv)
 {
 
 	// std::string xmlFilePath = CONFIGS_DIR + "\\" + "solar.xml"; //windows
-	std::string xmlFilePath = CONFIGS_DIR + "/test_files_phase_2/" + "test_2_4.xml"; // linux com rotacoes
+	std::string xmlFilePath = CONFIGS_DIR + "/test_files_phase_3/" + "test_3_2.xml"; // linux com rotacoes
 	// std::string xmlFilePath = CONFIGS_DIR + "/" + "solar_estatic.xml"; //linux sem rotacoes
 
 	// Load the XML file
