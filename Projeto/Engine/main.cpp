@@ -102,7 +102,7 @@ public:
 		}
 		else if (type == "rotate")
 		{
-			glRotatef(angle, x, y, z); // Use angle in glRotatef
+			glRotatef(angle, x, y, z);
 		}
 		else if (type == "scale")
 		{
@@ -122,7 +122,6 @@ private:
 public:
 	Model() : bufferID(0), numVertices(0) {}
 
-	// Set vertices data
 	void setVertices(int vertices)
 	{
 		numVertices = vertices;
@@ -170,19 +169,20 @@ public:
 
 		std::string linha;
 		std::vector<float> vertexB;
+
 		while (std::getline(arquivo, linha))
 		{
 
 			std::istringstream iss(linha);
 			char descartavel;
 			float num1, num2, num3;
-			iss >> descartavel; // Descarta o primeiro caractere
-			iss.ignore();		// Ignora o ponto e v�rgula
-			iss >> num1;		// L� o primeiro n�mero
-			iss.ignore();		// Ignora o ponto e v�rgula
-			iss >> num2;		// L� o segundo n�mero
-			iss.ignore();		// Ignora o ponto e v�rgula
-			iss >> num3;		// L� o terceiro n�mero
+			iss >> descartavel; // Descarta o primeiro caracter
+			iss.ignore();		// Ignora o ponto e virgula
+			iss >> num1;		// Le o primeiro numero
+			iss.ignore();		// Ignora o ponto e virgula
+			iss >> num2;		// Le o segundo numero
+			iss.ignore();		// Ignora o ponto e virgula
+			iss >> num3;		// Le o terceiro numero
 			vertexB.push_back(num1);
 			vertexB.push_back(num2);
 			vertexB.push_back(num3);
@@ -192,13 +192,12 @@ public:
 
 		glBindBuffer(GL_ARRAY_BUFFER, bufferID);
 
-		glBufferData(GL_ARRAY_BUFFER,				 // tipo do buffer, s� � relevante na altura do desenho
+		glBufferData(GL_ARRAY_BUFFER,				 // tipo do buffer, so e relevante na altura do desenho
 					 sizeof(float) * vertexB.size(), // tamanho do vector em bytes
 					 vertexB.data(),				 // os dados do array associado ao vector
-					 GL_STATIC_DRAW);				 // indicativo da utiliza��o (est�tico e para desenho)
+					 GL_STATIC_DRAW);				 // indicativo da utilizacao (estatico e para desenho)
 	}
 
-	// Draw model
 	void draw()
 	{
 		if (bufferID != 0)
@@ -294,10 +293,6 @@ void renderScene(void)
 	// desenhar models VBO's
 	for (int i = 0; i < num_models; i++)
 	{
-
-		std::cout << "Modelo " << i << "\n";
-		printTransformations(modelsArray[i].getTransf());
-
 		glPushMatrix();
 		modelsArray[i].draw();
 		glPopMatrix();
@@ -358,27 +353,6 @@ void printInfo()
 	printf("Page Up and Page Down control the distance from the camera to the origin\n");
 }
 
-Transformation parseSingleTransformation(const std::string &token)
-{
-	std::istringstream tokenStream(token);
-	std::string type;
-	double x, y, z;
-	float angle = 0.0f; // Default angle
-
-	tokenStream >> type;
-	if (type == "rotate")
-	{
-		tokenStream >> angle;
-	}
-	else if (type == "translate")
-	{
-	}
-
-	tokenStream >> std::skipws >> x >> std::skipws >> y >> std::skipws >> z;
-
-	return Transformation(type, x, y, z, angle);
-}
-
 Transformation parseSingleTransformationNode(pugi::xml_node transformation)
 {
 	std::string type;
@@ -390,6 +364,7 @@ Transformation parseSingleTransformationNode(pugi::xml_node transformation)
 	type = std::string(transformation.name());
 	Transformation t;
 	t.setType(type);
+
 	if (type == "translate")
 	{
 		// Check if there are multiple <point> elements
@@ -450,27 +425,15 @@ Transformation parseSingleTransformationNode(pugi::xml_node transformation)
 void readGroup(pugi::xml_node group, std::vector<Transformation> transVector)
 {
 
-	// translate 1 2 3;rotate 90 1 2 3;scales 0.75 0.75 0.75;
 	for (pugi::xml_node transformation : group.child("transform").children())
 	{
-		std::string transformationString;
-
-		transformationString += std::string(transformation.name()) + " ";
-
-		for (pugi::xml_attribute attr : transformation.attributes())
-		{
-			transformationString += std::string(attr.value()) + " ";
-		}
-
-		transformationString += ";";
-
-		transVector.push_back(parseSingleTransformation(transformationString));
+		transVector.push_back(parseSingleTransformationNode(transformation));
 	}
 
 	for (pugi::xml_node model : group.child("models").children("model"))
 	{
 		std::string modelFile = model.attribute("file").as_string();
-		// modelsArray[num_models].setFilePath("models\\" + modelFile);	//windows
+
 		modelsArray[num_models].setFilePath("models/" + modelFile); // linux
 
 		modelsArray[num_models].setTransf(transVector);
@@ -489,12 +452,10 @@ void readGroup(pugi::xml_node group, std::vector<Transformation> transVector)
 void readConfig(const pugi::xml_node &world)
 {
 
-	// Parse window attributes
 	pugi::xml_node window = world.child("window");
 	WINDOW_WIDTH = window.attribute("width").as_int();
 	WINDOW_HEIGHT = window.attribute("height").as_int();
 
-	// Parse camera attributes
 	pugi::xml_node camera = world.child("camera");
 
 	camX = camera.child("position").attribute("x").as_double();
@@ -513,12 +474,10 @@ void readConfig(const pugi::xml_node &world)
 	nearPlane = camera.child("projection").attribute("near").as_double();
 	farPlane = camera.child("projection").attribute("far").as_double();
 
-	// Parse model paths
 	for (pugi::xml_node group : world.children("group"))
 	{
 		std::vector<Transformation> transVector;
 		readGroup(group, transVector);
-		// std::cout << "Group: " << transVector. << "\n";
 	}
 }
 
@@ -533,10 +492,8 @@ void printConfig(const pugi::xml_node &node, int depth = 0)
 		std::cout << std::string(depth * 2 + 2, ' ') << "Attribute: " << attr.name() << " = " << attr.value() << std::endl;
 	}
 
-	// Output node value if any
 	const char *value = node.child_value();
 
-	// linux
 	if (value && strlen(value) > 0)
 	{
 		std::cout << std::string(depth * 2 + 2, ' ') << "Value: " << value << std::endl;
@@ -552,14 +509,12 @@ void printConfig(const pugi::xml_node &node, int depth = 0)
 int main(int argc, char **argv)
 {
 
-	// std::string xmlFilePath = CONFIGS_DIR + "\\" + "solar.xml"; //windows
-	std::string xmlFilePath = CONFIGS_DIR + "/test_files_phase_3/" + "test_3_2.xml"; // linux com rotacoes
-	// std::string xmlFilePath = CONFIGS_DIR + "/" + "solar_estatic.xml"; //linux sem rotacoes
+	std::string xmlFilePath = CONFIGS_DIR + "/test_files_phase_2/" + "test_2_4.xml"; // linux com rotacoes
 
 	// Load the XML file
 	pugi::xml_document doc;
 	pugi::xml_parse_result result = doc.load_file(xmlFilePath.c_str());
-	// Start printing from the root node
+
 	// printConfig(doc.root());
 
 	pugi::xml_node world = doc.child("world");
@@ -574,14 +529,14 @@ int main(int argc, char **argv)
 
 	// Required callback registry
 	glutDisplayFunc(renderScene);
-	// glutIdleFunc(renderScene); // PARA CALCULAR OS FRAMES
+	glutIdleFunc(renderScene);
 	glutReshapeFunc(changeSize);
 
 	// Callback registration for keyboard processing
 	glutKeyboardFunc(processKeys);
 	glutSpecialFunc(processSpecialKeys);
 
-	// init GLEW
+// init GLEW
 #ifndef __APPLE__
 	glewInit();
 #endif
@@ -597,8 +552,6 @@ int main(int argc, char **argv)
 
 	for (size_t i = 1; i < num_models + 1; i++)
 	{
-		// std::cout << "MODELO " << i << ": " << modelsArray[i - 1].getTransf() << "\n";
-
 		modelsArray[i - 1].importModel(i);
 	}
 
