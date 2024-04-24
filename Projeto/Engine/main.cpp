@@ -326,55 +326,52 @@ void printInfo()
 	printf("Page Up and Page Down control the distance from the camera to the origin\n");
 }
 
-std::vector<Transformation> parseTransf(const std::string &transformations)
+Transformation parseSingleTransformation(const std::string &token)
 {
-	std::istringstream iss(transformations);
-	std::string token;
-	std::vector<Transformation> transformationList;
+	std::istringstream tokenStream(token);
+	std::string type;
+	double x, y, z;
+	float angle = 0.0f; // Default angle
 
-	// translate 1 2 3;rotate 90 1 2 3;scales 0.75 0.75 0.75;
-	while (std::getline(iss, token, ';'))
+	tokenStream >> type;
+	if (type == "rotate")
 	{
-		std::istringstream tokenStream(token);
-		std::string type;
-		double x, y, z;
-		float angle = 0.0f; // Default angle
-
-		tokenStream >> type;
-		if (type == "rotate")
-		{
-			// If the type is "rotate", extract the angle first
-			tokenStream >> angle;
-		}
-
-		tokenStream >> std::skipws >> x >> std::skipws >> y >> std::skipws >> z;
-
-		Transformation transformation(type, x, y, z, angle);
-		transformationList.push_back(transformation);
+		// If the type is "rotate", extract the angle first
+		tokenStream >> angle;
 	}
-	return transformationList;
+
+	tokenStream >> std::skipws >> x >> std::skipws >> y >> std::skipws >> z;
+
+	return Transformation(type, x, y, z, angle);
 }
 
-void readGroup(pugi::xml_node group, std::string &transformationsString)
+void readGroup(pugi::xml_node group, std::vector<Transformation> transVector)
 {
 
 	// translate 1 2 3;rotate 90 1 2 3;scales 0.75 0.75 0.75;
 	for (pugi::xml_node transformation : group.child("transform").children())
 	{
-		transformationsString += std::string(transformation.name()) + " ";
+		std::string transformationString;
+
+		transformationString += std::string(transformation.name()) + " ";
+
 		for (pugi::xml_attribute attr : transformation.attributes())
 		{
-			transformationsString += std::string(attr.value()) + " ";
+			transformationString += std::string(attr.value()) + " ";
 		}
-		transformationsString += ";";
+
+		transformationString += ";";
+
+		transVector.push_back(parseSingleTransformation(transformationString));
 	}
+
 	for (pugi::xml_node model : group.child("models").children("model"))
 	{
 		std::string modelFile = model.attribute("file").as_string();
 		// modelsArray[num_models].setFilePath("models\\" + modelFile);	//windows
 		modelsArray[num_models].setFilePath("models/" + modelFile); // linux
 
-		modelsArray[num_models].setTransf(parseTransf(transformationsString));
+		modelsArray[num_models].setTransf(transVector);
 		num_models++;
 	}
 	int j = 0;
@@ -382,8 +379,8 @@ void readGroup(pugi::xml_node group, std::string &transformationsString)
 	{
 		std::cout << "Group " << j;
 		j++;
-		std::string newTStr = transformationsString;
-		readGroup(childGroup, newTStr);
+		std::vector<Transformation> newVec = transVector;
+		readGroup(childGroup, newVec);
 	}
 }
 
@@ -417,9 +414,9 @@ void readConfig(const pugi::xml_node &world)
 	// Parse model paths
 	for (pugi::xml_node group : world.children("group"))
 	{
-		std::string transfString;
-		readGroup(group, transfString);
-		std::cout << "Group: " << transfString << "\n";
+		std::vector<Transformation> transVector;
+		readGroup(group, transVector);
+		// std::cout << "Group: " << transVector. << "\n";
 	}
 }
 
@@ -454,7 +451,7 @@ int main(int argc, char **argv)
 {
 
 	// std::string xmlFilePath = CONFIGS_DIR + "\\" + "solar.xml"; //windows
-	std::string xmlFilePath = CONFIGS_DIR + "/test_files_phase_2/" + "test_2_1.xml"; // linux com rotacoes
+	std::string xmlFilePath = CONFIGS_DIR + "/test_files_phase_2/" + "test_2_4.xml"; // linux com rotacoes
 	// std::string xmlFilePath = CONFIGS_DIR + "/" + "solar_estatic.xml"; //linux sem rotacoes
 
 	// Load the XML file
