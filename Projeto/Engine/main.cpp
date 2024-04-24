@@ -274,6 +274,28 @@ void printTransformations(const std::vector<Transformation> &transformations)
 	}
 }
 
+void calculateFPS()
+{
+
+	frame++;
+	float fps = 0.0f;
+	int time = glutGet(GLUT_ELAPSED_TIME);
+	std::cout << "Calculating fps!" << time - timebase << "\n";
+
+	if (time - timebase > 1000)
+	{
+
+		fps = frame * 1000.0 / (time - timebase);
+		timebase = time;
+		frame = 0;
+
+		// Update window title with FPS
+		char title[50];
+		sprintf(title, "%.2f FPS", fps);
+		glutSetWindowTitle(title);
+	}
+}
+
 void renderScene(void)
 {
 
@@ -289,6 +311,7 @@ void renderScene(void)
 
 	// desenhar axis
 	drawAxis();
+	glPolygonMode(GL_FRONT, mode);
 
 	// desenhar models VBO's
 	for (int i = 0; i < num_models; i++)
@@ -298,21 +321,8 @@ void renderScene(void)
 		glPopMatrix();
 	}
 
-	// calcular frames
-	frame++;
-	float fps = 0.0f;
-	int time = glutGet(GLUT_ELAPSED_TIME);
-	if (time - timebase > 1000)
-	{
-		fps = frame * 1000.0 / (time - timebase);
-		timebase = time;
-		frame = 0;
-
-		// nome da window == FPS's
-		char title[50];
-		sprintf(title, "%.2f FPS", fps);
-		glutSetWindowTitle(title);
-	}
+	calculateFPS();
+	// glutSetWindowTitle("frame");
 
 	// End of frame
 	glutSwapBuffers();
@@ -439,11 +449,9 @@ void readGroup(pugi::xml_node group, std::vector<Transformation> transVector)
 		modelsArray[num_models].setTransf(transVector);
 		num_models++;
 	}
-	int j = 0;
+
 	for (pugi::xml_node childGroup : group.children("group"))
 	{
-		std::cout << "Group " << j;
-		j++;
 		std::vector<Transformation> newVec = transVector;
 		readGroup(childGroup, newVec);
 	}
@@ -509,7 +517,7 @@ void printConfig(const pugi::xml_node &node, int depth = 0)
 int main(int argc, char **argv)
 {
 
-	std::string xmlFilePath = CONFIGS_DIR + "/test_files_phase_2/" + "test_2_4.xml"; // linux com rotacoes
+	std::string xmlFilePath = CONFIGS_DIR + "/test_files_phase_2/" + "test_2_1.xml"; // linux com rotacoes
 
 	// Load the XML file
 	pugi::xml_document doc;
@@ -554,7 +562,6 @@ int main(int argc, char **argv)
 	{
 		modelsArray[i - 1].importModel(i);
 	}
-
 	// enter GLUT's main cycle
 	glutMainLoop();
 
