@@ -34,7 +34,7 @@ double fov, nearPlane, farPlane;
 float frames;
 
 float mode = GL_LINE;
-int timebase = glutGet(GLUT_ELAPSED_TIME);
+int timebase = 0;
 int frame = 0;
 
 void buildRotMatrix(float *x, float *y, float *z, float *m)
@@ -232,7 +232,6 @@ public:
 		for (int i = 0; i < NUM_STEPS; i++)
 		{
 			getGlobalCatmullRomPoint(gt, &pos, &deriv);
-			std::cout << "valores de p:" << pos.getX() << ", " << pos.getY() << ", " << pos.getZ() << std::endl;
 
 			glVertex3f(pos.getX(), pos.getY(), pos.getZ());
 
