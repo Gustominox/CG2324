@@ -1,0 +1,156 @@
+<world>
+    <window width="512" height="512" />
+    <camera> 
+        <position x="0" y="100" z="100" />
+        <lookAt x="0" y="0" z="0" />
+        <up x="0" y="1" z="0" />
+        <projection fov="60" near="1" far="2000" />
+    </camera>
+
+    <group> 
+
+        <!-- Cometa -->
+        <group>
+            <transform>
+            
+                
+                <translate time = "100" align="true"> <!-- O campo align diz se o objecto deve ser orientado na curva -->
+					<point x = "0" y = "0" z = "140" />
+					<point x = "140" y = "0" z = "0" />
+					<point x = "0" y = "0" z = "-140" />
+					<point x = "-14" y = "100" z = "0" />
+				</translate>
+
+				<scale x="0.4" y="0.4" z="0.4" />
+
+            </transform>
+            <models> 
+                <model file="sphere_1_8_8.3d" /> <!-- generator sphere 1 8 8 sphere_1_8_8.3d -->
+            </models>
+        </group>
+
+        <!-- Sun -->
+        <group>
+            <transform>
+				<scale x="10" y="10" z="10" />
+            </transform>
+            <models>
+                <model file="sphere_1_8_8.3d" /> <!-- generator sphere 10 32 32 sphere_10_32_32.3d -->
+            </models>
+        </group>  
+
+        
+        <!-- Mercury -->
+        <group>
+            <transform>
+            
+                <rotate time="17" x="0" y ="1" z = "0" />
+                <translate x="15" y="0" z="0" />
+
+				<scale x="0.4" y="0.4" z="0.4" />
+
+            </transform>
+            <models> 
+                <model file="sphere_1_8_8.3d" /> <!-- generator sphere 1 8 8 sphere_1_8_8.3d -->
+            </models>
+        </group>
+
+        <!-- Venus -->
+        <group>
+            <transform>
+                <rotate angle="60" x="0" y ="1" z = "0" />
+                <translate x="20" y="0" z="0" />
+				<scale x="1" y="1" z="1" />
+            </transform>
+            <models> 
+                <model file="sphere_1_8_8.3d" /> <!-- generator sphere 2 12 12 sphere_2_12_12.3d -->
+            </models>
+        </group>
+        
+        <!-- Earth -->
+        <group>
+            <transform>
+                <rotate angle="-120" x="0" y ="1" z = "0" />
+                <translate x="30" y="0" z="0" />
+				<scale x="1" y="1" z="1" />
+            </transform>
+            <models> 
+                <model file="sphere_1_8_8.3d" /> <!-- generator sphere 2 12 12 sphere_2_12_12.3d -->
+            </models>
+            <!-- Moon -->
+            <group>
+                <transform>
+
+                    <rotate angle="170" x="0" y ="1" z = "0" />
+                    <translate x="2" y="0" z="0" />
+
+			    	<scale x=".15" y="0.15" z="0.15" />
+
+                </transform>
+                <models> 
+                    <model file="sphere_1_8_8.3d" /> <!-- generator sphere 1 8 8 sphere_1_8_8.3d -->
+                </models>
+            </group>
+        </group>
+
+        <!-- Mars -->
+        <group>
+            <transform>
+                <rotate angle="-45" x="0" y ="1" z = "0" />
+                <translate x="40" y="0" z="0" />
+				<scale x="0.7" y="0.7" z="0.7" />
+            </transform>
+            <models> 
+                <model file="sphere_1_8_8.3d" /> <!-- generator sphere 1.5 10 10 sphere_1.5_10_10.3d -->
+            </models>
+        </group>
+
+        <!-- Jupiter -->
+        <group>
+            <transform>
+                <rotate angle="-160" x="0" y ="1" z = "0" />
+                <translate x="60" y="0" z="0" />
+				<scale x="6" y="6" z="6" />
+            </transform>
+            <models> 
+                <model file="sphere_1_8_8.3d" /> <!-- generator sphere 5 20 20 sphere_5_20_20.3d -->
+            </models>
+        </group>
+
+        <!-- Saturn -->
+        <group>
+            <transform>
+                <rotate angle="160" x="0" y ="1" z = "0" />
+                <translate x="85" y="0" z="0" />
+				<scale x="5.5" y="5.5" z="5.5" />
+            </transform> 
+            <models> 
+                <model file="sphere_1_8_8.3d" /> <!-- generator sphere 4 16 16 sphere_4_16_16.3d -->
+            </models>
+        </group>
+
+        <!-- Uranus -->
+        <group>
+            <transform>
+                <rotate angle="20" x="0" y ="1" z = "0" />
+                <translate x="105" y="0" z="0" />
+				<scale x="3" y="3" z="3" />
+            </transform>
+            <models> 
+                <model file="sphere_1_8_8.3d" /> <!-- generator sphere 3 14 14 sphere_3_14_14.3d -->
+            </models>
+        </group>
+
+        <!-- Neptune -->    
+        <group>
+            <transform>
+                <rotate angle="-20" x="0" y ="1" z = "0" />
+                <translate x="120" y="0" z="0" />
+				<scale x="3" y="3" z="3" />
+            </transform>
+            <models> 
+                <model file="sphere_1_8_8.3d" /> <!-- generator sphere 3 14 14 sphere_3_14_14.3d -->
+            </models>
+        </group>
+    </group>
+</world>

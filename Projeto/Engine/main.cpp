@@ -17,7 +17,7 @@
 #include <math.h>
 #include <string.h>
 
-#define MAX_MODELS 10
+#define MAX_MODELS 100
 
 // std::string CONFIGS_DIR = "C:\\Users\\gimez\\Desktop\\CG2324\\Projeto\\test_files\\test_files_phase_2";
 // std::string CONFIGS_DIR = "C:\\Users\\gimez\\Desktop\\CG2324\\Projeto\\test_files";
@@ -724,7 +724,8 @@ void printConfig(const pugi::xml_node &node, int depth = 0)
 int main(int argc, char **argv)
 {
 
-	std::string xmlFilePath = CONFIGS_DIR + "/test_files_phase_3/" + "test_3_1.xml"; // linux com rotacoes
+	// std::string xmlFilePath = CONFIGS_DIR + "/test_files_phase_3/" + "test_3_1.xml";
+	std::string xmlFilePath = CONFIGS_DIR + "/test_files_phase_3/" + "solar.xml";
 
 	// Load the XML file
 	pugi::xml_document doc;
