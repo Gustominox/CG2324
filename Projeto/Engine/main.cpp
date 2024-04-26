@@ -284,13 +284,21 @@ public:
 
 					glMultMatrixf(m);
 				}
-
-				// t =+ 0.001;
 			}
 		}
 		else if (type == "rotate")
 		{
-			glRotatef(angle, x, y, z); // Use angle in glRotatef
+			if (time == 0.0)
+			{
+				glRotatef(angle, x, y, z);
+			}
+			else
+			{
+				float elapsed = glutGet(GLUT_ELAPSED_TIME) / 1000.0f;
+				angle = (elapsed / time) * 360.0;
+				std::cout << "angle: " << angle << std::endl;
+				glRotatef(angle, x, y, z);
+			}
 		}
 		else if (type == "scale")
 		{
@@ -468,7 +476,6 @@ void calculateFPS()
 	frame++;
 	float fps = 0.0f;
 	int time = glutGet(GLUT_ELAPSED_TIME);
-	std::cout << "Calculating fps!" << time - timebase << "\n";
 
 	if (time - timebase > 1000)
 	{
@@ -597,14 +604,26 @@ Transformation parseSingleTransformationNode(pugi::xml_node transformation)
 	}
 	else if (type == "rotate")
 	{
-		angle = transformation.attribute("angle").as_float();
+		if (transformation.attribute("time"))
+		{
+			time = transformation.attribute("time").as_double();
+			t.setTime(time);
+		}
+		else
+		{
+
+			angle = transformation.attribute("angle").as_float();
+			t.setAngle(angle);
+			t.setTime(0.0);
+		}
+
 		x = transformation.attribute("x").as_double();
 		y = transformation.attribute("y").as_double();
 		z = transformation.attribute("z").as_double();
+
 		t.setX(x);
 		t.setY(y);
 		t.setZ(z);
-		t.setAngle(angle);
 	}
 	else if (type == "scale")
 	{
