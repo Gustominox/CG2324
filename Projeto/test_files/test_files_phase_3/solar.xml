@@ -1,7 +1,7 @@
 <world>
     <window width="512" height="512" />
     <camera> 
-        <position x="0" y="100" z="200" />
+        <position x="0" y="80" z="250" />
         <lookAt x="0" y="0" z="0" />
         <up x="0" y="1" z="0" />
         <projection fov="60" near="1" far="2000" />
@@ -44,7 +44,7 @@
         <group>
             <transform>
             
-                <rotate time="17" x="0" y ="1" z = "0" />
+                <rotate time="9" x="0" y ="1" z = "0" />
                 <translate x="15" y="0" z="0" />
 
 				<scale x="0.4" y="0.4" z="0.4" />
@@ -58,7 +58,7 @@
         <!-- Venus -->
         <group>
             <transform>
-                <rotate angle="60" x="0" y ="1" z = "0" />
+                <rotate time="22" x="0" y ="1" z = "0" />
                 <translate x="20" y="0" z="0" />
 				<scale x="1" y="1" z="1" />
             </transform>
@@ -70,18 +70,19 @@
         <!-- Earth -->
         <group>
             <transform>
-                <rotate angle="-120" x="0" y ="1" z = "0" />
+                <rotate time="36" x="0" y ="1" z = "0" />
                 <translate x="30" y="0" z="0" />
 				<scale x="1" y="1" z="1" />
             </transform>
             <models> 
+                <rotate time="3" x="0" y ="1" z = "0" />
                 <model file="sphere_1_8_8.3d" /> <!-- generator sphere 2 12 12 sphere_2_12_12.3d -->
             </models>
             <!-- Moon -->
             <group>
                 <transform>
 
-                    <rotate angle="170" x="0" y ="1" z = "0" />
+                    <rotate time="3" x="0" y ="1" z = "0" />  
                     <translate x="2" y="0" z="0" />
 
 			    	<scale x=".15" y="0.15" z="0.15" />
@@ -96,7 +97,7 @@
         <!-- Mars -->
         <group>
             <transform>
-                <rotate angle="-45" x="0" y ="1" z = "0" />
+                <rotate time="50" x="0" y ="1" z = "0" />
                 <translate x="40" y="0" z="0" />
 				<scale x="0.7" y="0.7" z="0.7" />
             </transform>
@@ -108,7 +109,7 @@
         <!-- Jupiter -->
         <group>
             <transform>
-                <rotate angle="-160" x="0" y ="1" z = "0" />
+                <rotate time="110" x="0" y ="1" z = "0" />
                 <translate x="60" y="0" z="0" />
 				<scale x="6" y="6" z="6" />
             </transform>
@@ -120,7 +121,7 @@
         <!-- Saturn -->
         <group>
             <transform>
-                <rotate angle="160" x="0" y ="1" z = "0" />
+                <rotate time="150" x="0" y ="1" z = "0" />
                 <translate x="85" y="0" z="0" />
 				<scale x="5.5" y="5.5" z="5.5" />
             </transform> 
@@ -132,7 +133,7 @@
         <!-- Uranus -->
         <group>
             <transform>
-                <rotate angle="20" x="0" y ="1" z = "0" />
+                <rotate time="190" x="0" y ="1" z = "0" />
                 <translate x="105" y="0" z="0" />
 				<scale x="3" y="3" z="3" />
             </transform>
@@ -144,7 +145,7 @@
         <!-- Neptune -->    
         <group>
             <transform>
-                <rotate angle="-20" x="0" y ="1" z = "0" />
+                <rotate time="220" x="0" y ="1" z = "0" />
                 <translate x="120" y="0" z="0" />
 				<scale x="3" y="3" z="3" />
             </transform>

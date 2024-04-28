@@ -419,18 +419,18 @@ void drawAxis()
 	// X axis in red
 	glColor3f(1.0f, 0.0f, 0.0f);
 	glVertex3f(
-		-200.0f, 0.0f, 0.0f);
-	glVertex3f(200.0f, 0.0f, 0.0f);
+		-400.0f, 0.0f, 0.0f);
+	glVertex3f(4200.0f, 0.0f, 0.0f);
 	// Y Axis in Green
 	glColor3f(0.0f, 1.0f, 0.0f);
 	glVertex3f(0.0f,
-			   -100.0f, 0.0f);
-	glVertex3f(0.0f, 100.0f, 0.0f);
+			   -400.0f, 0.0f);
+	glVertex3f(0.0f, 400.0f, 0.0f);
 	// Z Axis in Blue
 	glColor3f(0.0f, 0.0f, 1.0f);
 	glVertex3f(0.0f, 0.0f,
-			   -100.0f);
-	glVertex3f(0.0f, 0.0f, 100.0f);
+			   -400.0f);
+	glVertex3f(0.0f, 0.0f, 400.0f);
 
 	// Color white
 	glColor3f(1.0f, 1.0f, 1.0f);
@@ -727,7 +727,7 @@ int main(int argc, char **argv)
 {
 
 	// std::string xmlFilePath = CONFIGS_DIR + "/test_files_phase_3/" + "test_3_1.xml";
-	std::string xmlFilePath = CONFIGS_DIR + "/test_files_phase_3/" + "test_3_1.xml";
+	std::string xmlFilePath = CONFIGS_DIR + "/test_files_phase_3/" + "solar.xml";
 
 	// Load the XML file
 	pugi::xml_document doc;
