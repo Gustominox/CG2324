@@ -3,6 +3,58 @@
 #include <iomanip> 
 #include <cmath>
 #include <cstring>
+#include <vector>
+
+void multMatrixVector(float m[4][4], float v[4], float res[4], bool isRowVector) {
+    if (isRowVector) {
+        // Vector * Matrix (1xN * NxM)
+        for (int i = 0; i < 4; ++i) {
+            res[i] = 0;
+            for (int j = 0; j < 4; ++j) {
+                res[i] += v[j] * m[j][i];
+            }
+        }
+    } else {
+        // Matrix * Vector (NxM * Mx1)
+        for (int i = 0; i < 4; ++i) {
+            res[i] = 0;
+            for (int j = 0; j < 4; ++j) {
+                res[i] += m[i][j] * v[j];
+            }
+        }
+    }
+}
+
+float multVectors(float *m, float *v)
+{
+	float res = 0;
+	for (int i = 0; i < 4; ++i)
+	{
+		res = res + m[i] * v[i];
+	}
+	return res;
+}
+
+
+class Point
+{
+private:
+	double x, y, z;
+
+public:
+	Point(double _x = 0.0, double _y = 0.0, double _z = 0.0) : x(_x), y(_y), z(_z) {}
+
+	double getX() const { return x; }
+	double getY() const { return y; }
+	double getZ() const { return z; }
+
+	void setX(double _x) { x = _x; }
+	void setY(double _y) { y = _y; }
+	void setZ(double _z) { z = _z; }
+};
+
+std::vector<std::vector<int>> vectors;
+std::vector<Point> controlPoints;
 
 class Generator {
 public:
@@ -275,6 +327,7 @@ public:
         outfile.close();
         std::cout << "Cone model generated and saved to " << filename << std::endl;
     }
+
     static void generateSphere(float radius, int slices, int stacks, const std::string& filename){
         std::ofstream outfile(filename);
         if (!outfile.is_open()) {
@@ -328,7 +381,164 @@ public:
         std::cout << "Sphere model generated and saved to " << filename << std::endl;
     
     }
-   
+
+
+    static bool parseFile(const std::string& filename, std::vector<std::vector<int>>& vectors, std::vector<Point>& points) {
+        std::ifstream file(filename);
+        if (!file.is_open()) {
+            std::cerr << "Error opening file " << filename << std::endl;
+            return false;
+        }
+
+        std::string line;
+        // Parse vectors
+        int numVectors;
+        if (std::getline(file, line)) {
+            std::istringstream iss(line);
+            if (!(iss >> numVectors)) {
+                std::cerr << "Error parsing number of vectors" << std::endl;
+                return false;
+            }
+            vectors.resize(numVectors);
+            for (int i = 0; i < numVectors; ++i) {
+                if (!std::getline(file, line)) {
+                    std::cerr << "Error reading vector " << i + 1 << std::endl;
+                    return false;
+                }
+                std::istringstream issVec(line);
+                float value;
+                while (issVec >> value) {
+                    vectors[i].push_back(value);
+                    if (issVec.peek() == ',')
+                        issVec.ignore();
+                }
+            }
+        } else {
+            std::cerr << "Error reading file" << std::endl;
+            return false;
+        }
+
+        // Parse points
+        int numPoints;
+        if (std::getline(file, line)) {
+            std::istringstream iss(line);
+            if (!(iss >> numPoints)) {
+                std::cerr << "Error parsing number of points" << std::endl;
+                return false;
+            }
+            points.resize(numPoints);
+            for (int i = 0; i < numPoints; ++i) {
+                if (!std::getline(file, line)) {
+                    std::cerr << "Error reading point " << i + 1 << std::endl;
+                    return false;
+                }
+                std::istringstream issPoint(line);
+                double x, y, z;
+                char comma;
+                if (!(issPoint >> x >> comma >> y >> comma >> z)) {
+                    std::cerr << "Error parsing point " << i + 1 << std::endl;
+                    return false;
+                }
+                points[i] = Point(x, y, z);
+            }
+        } else {
+            std::cerr << "Error reading file" << std::endl;
+            return false;
+        }
+
+        return true;
+    }
+
+    static Point surfPoint(float u, float v, std::vector<int> i){ //verificar se as contas se fazem bem
+    	float m[4][4] = {{-1.0f,  3.0f, -3.0f, 1.0f},
+    				 {3.0f, -6.0f,  3.0f, 0.0f},
+    				 {-3.0f,  3.0f,  0.0f, 0.0f},
+    				 {1.0f,  0.0f,  0.0f, 0.0f}};
+
+    	float uv[4] = {u*u*u,u*u,u,1.0f}; //1*4 vetor u
+    	float vv[4] = {v*v*v,v*v,v,1.0f}; //4*1 vetor v
+    	float um[4];
+    	float vm[4];
+    	multMatrixVector(m, uv, um, true); 	// uv * m = 1 * 4
+    	multMatrixVector(m, vv, vm, false); // m * vv = 4 * 1
+    	//matrix dos X's
+    	float mx[4][4] = {	{controlPoints[i[0]].getX(),  controlPoints[i[1]].getX(),  controlPoints[i[2]].getX(),  controlPoints[i[3]].getX()},
+    				 		{controlPoints[i[4]].getX(),  controlPoints[i[5]].getX(),  controlPoints[i[6]].getX(),  controlPoints[i[7]].getX()},
+    				 		{controlPoints[i[8]].getX(),  controlPoints[i[9]].getX(),  controlPoints[i[10]].getX(), controlPoints[i[11]].getX()},
+    				 		{controlPoints[i[12]].getX(), controlPoints[i[13]].getX(), controlPoints[i[14]].getX(), controlPoints[i[15]].getX()}};
+
+    	//matrix dos Y's
+    	float my[4][4] = {	{controlPoints[i[0]].getY(),  controlPoints[i[1]].getY(),  controlPoints[i[2]].getY(),  controlPoints[i[3]].getY()},
+    				 		{controlPoints[i[4]].getY(),  controlPoints[i[5]].getY(),  controlPoints[i[6]].getY(),  controlPoints[i[7]].getY()},
+    				 		{controlPoints[i[8]].getY(),  controlPoints[i[9]].getY(),  controlPoints[i[10]].getY(), controlPoints[i[11]].getY()},
+    				 		{controlPoints[i[12]].getY(), controlPoints[i[13]].getY(), controlPoints[i[14]].getY(), controlPoints[i[15]].getY()}};
+
+    	//matrix dos Z's
+    	float mz[4][4] = {	{controlPoints[i[0]].getZ(),  controlPoints[i[1]].getZ(),  controlPoints[i[2]].getZ(),  controlPoints[i[3]].getZ()},
+    				 		{controlPoints[i[4]].getZ(),  controlPoints[i[5]].getZ(),  controlPoints[i[6]].getZ(),  controlPoints[i[7]].getZ()},
+    				 		{controlPoints[i[8]].getZ(),  controlPoints[i[9]].getZ(),  controlPoints[i[10]].getZ(), controlPoints[i[11]].getZ()},
+    				 		{controlPoints[i[12]].getZ(), controlPoints[i[13]].getZ(), controlPoints[i[14]].getZ(), controlPoints[i[15]].getZ()}};
+
+    	float umpx[4];
+    	float umpy[4];
+    	float umpz[4];
+
+    	multMatrixVector(mx, um, umpx, true); // um * mx = 1*4 
+    	multMatrixVector(my, um, umpy, true); // um * my = 1*4
+    	multMatrixVector(mz, um, umpz, true); // um * mz = 1*4
+    	Point a;
+    	a.setX(multVectors(umpx, vm));
+    	a.setY(multVectors(umpy, vm));
+    	a.setZ(multVectors(umpz, vm));
+    	return a;
+    }
+
+
+    static void generateBezier(const std::string& patchfile, int tessellation, const std::string& filename){
+        //abre e le o patchfile
+        parseFile(patchfile, vectors, controlPoints);
+        
+        
+        std::ofstream outfile(filename);
+        if (!outfile.is_open()) {
+            std::cerr << "Error: Unable to open file " << filename << std::endl;
+            return;
+        }
+
+        // Set precision to 6 decimals
+        outfile << std::fixed << std::setprecision(6);
+
+        Point a, b, c, d;
+	    float u = 0.0f, v = 0.0f, delta = 1.0f/tessellation;
+	    for(int k = 0; k<vectors.size(); k++){ //percorrer cada vetor de indices
+	    	for(int i = 0; i < tessellation; i++, u+=delta){
+	    		for(int j = 0; j < tessellation; j++, v+=delta){
+                
+	    			//CALCULO DE PONTOS
+	    			a = surfPoint(u		 , v	  , vectors[k]);
+	    			b = surfPoint(u		 , v+delta, vectors[k]);
+	    			c = surfPoint(u+delta, v	  , vectors[k]);
+	    			d = surfPoint(u+delta, v+delta, vectors[k]);
+    
+                    
+                    //Triangulaçao
+                    outfile << "v;" << c.getX() << ";" << c.getY() <<  ";" << c.getZ() << ";" << std::endl;;
+		            outfile << "v;" << a.getX() << ";" << a.getY() << ";"  << a.getZ() << ";" << std::endl;;
+		            outfile << "v;" << b.getX() << ";" << b.getY() << ";"  << b.getZ() << ";" << std::endl;;
+                    outfile << "v;" << b.getX() << ";" << b.getY() <<  ";" << b.getZ() << ";" << std::endl;;
+		            outfile << "v;" << d.getX() << ";" << d.getY() << ";"  << d.getZ() << ";" << std::endl;;
+		            outfile << "v;" << c.getX() << ";" << c.getY() << ";"  << c.getZ() << ";" << std::endl;;
+    
+	    		}
+	    		v = 0.0f;
+	    	}
+	    	u = v = 0.0f;
+	    } 
+        outfile.close();
+        std::cout << "Sphere model generated and saved to " << filename << std::endl;
+    }
+
+
 };
 
 int main(int argc, char* argv[]) {
