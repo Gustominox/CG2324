@@ -1,7 +1,7 @@
 <world>
     <window width="512" height="512" />
     <camera> 
-        <position x="0" y="100" z="100" />
+        <position x="0" y="100" z="200" />
         <lookAt x="0" y="0" z="0" />
         <up x="0" y="1" z="0" />
         <projection fov="60" near="1" far="2000" />
@@ -25,7 +25,7 @@
 
             </transform>
             <models> 
-                <model file="sphere_1_8_8.3d" /> <!-- generator sphere 1 8 8 sphere_1_8_8.3d -->
+                <model file="bezier_10.3d" /> <!-- generator  patch teapot.patch 10 bezier_10.3d -->
             </models>
         </group>
 

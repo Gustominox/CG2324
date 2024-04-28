@@ -39,22 +39,90 @@ float multVectors(float *m, float *v)
 class Point
 {
 private:
-	double x, y, z;
+	float x, y, z;
 
 public:
-	Point(double _x = 0.0, double _y = 0.0, double _z = 0.0) : x(_x), y(_y), z(_z) {}
+	Point(float _x = 0.0, float _y = 0.0, float _z = 0.0) : x(_x), y(_y), z(_z) {}
 
-	double getX() const { return x; }
-	double getY() const { return y; }
-	double getZ() const { return z; }
+	float getX() const { return x; }
+	float getY() const { return y; }
+	float getZ() const { return z; }
 
-	void setX(double _x) { x = _x; }
-	void setY(double _y) { y = _y; }
-	void setZ(double _z) { z = _z; }
+	void setX(float _x) { x = _x; }
+	void setY(float _y) { y = _y; }
+	void setZ(float _z) { z = _z; }
 };
 
 std::vector<std::vector<int>> vectors;
 std::vector<Point> controlPoints;
+
+bool parseFile(const std::string& filename, std::vector<std::vector<int>>& vectors, std::vector<Point>& points) {
+    std::ifstream file(filename);
+    if (!file.is_open()) {
+        std::cerr << "Error opening file " << filename << std::endl;
+        return false;
+    }
+
+    std::string line;
+    // Parse vectors
+    int numVectors;
+    if (std::getline(file, line)) {
+        std::istringstream iss(line);
+        if (!(iss >> numVectors)) {
+            std::cerr << "Error parsing number of vectors" << std::endl;
+            return false;
+        }
+        vectors.resize(numVectors);
+        for (int i = 0; i < numVectors; ++i) {
+            if (!std::getline(file, line)) {
+                std::cerr << "Error reading vector " << i + 1 << std::endl;
+                return false;
+            }
+            std::istringstream issVec(line);
+            float value;
+            while (issVec >> value) {
+                vectors[i].push_back(value);
+                if (issVec.peek() == ',')
+                    issVec.ignore();
+            }
+        }
+    } else {
+        std::cerr << "Error reading file" << std::endl;
+        return false;
+    }
+
+    // Parse points
+    int numPoints;
+    if (std::getline(file, line)) {
+        std::istringstream iss(line);
+        if (!(iss >> numPoints)) {
+            std::cerr << "Error parsing number of points" << std::endl;
+            return false;
+        }
+        points.resize(numPoints);
+        for (int i = 0; i < numPoints; ++i) {
+            if (!std::getline(file, line)) {
+                std::cerr << "Error reading point " << i + 1 << std::endl;
+                return false;
+            }
+            std::istringstream issPoint(line);
+            double x, y, z;
+            char comma;
+            if (!(issPoint >> x >> comma >> y >> comma >> z)) {
+                std::cerr << "N_Points: " << numPoints<< std::endl;
+                std::cerr << "N_vectors: " << numVectors<< std::endl;
+                std::cerr << "Error parsing point " << i + 1 << std::endl;
+                return false;
+            }
+            points[i] = Point(x, y, z);
+        }
+    } else {
+        std::cerr << "Error reading file" << std::endl;
+        return false;
+    }
+
+    return true;
+}
 
 class Generator {
 public:
@@ -383,72 +451,7 @@ public:
     }
 
 
-    static bool parseFile(const std::string& filename, std::vector<std::vector<int>>& vectors, std::vector<Point>& points) {
-        std::ifstream file(filename);
-        if (!file.is_open()) {
-            std::cerr << "Error opening file " << filename << std::endl;
-            return false;
-        }
-
-        std::string line;
-        // Parse vectors
-        int numVectors;
-        if (std::getline(file, line)) {
-            std::istringstream iss(line);
-            if (!(iss >> numVectors)) {
-                std::cerr << "Error parsing number of vectors" << std::endl;
-                return false;
-            }
-            vectors.resize(numVectors);
-            for (int i = 0; i < numVectors; ++i) {
-                if (!std::getline(file, line)) {
-                    std::cerr << "Error reading vector " << i + 1 << std::endl;
-                    return false;
-                }
-                std::istringstream issVec(line);
-                float value;
-                while (issVec >> value) {
-                    vectors[i].push_back(value);
-                    if (issVec.peek() == ',')
-                        issVec.ignore();
-                }
-            }
-        } else {
-            std::cerr << "Error reading file" << std::endl;
-            return false;
-        }
-
-        // Parse points
-        int numPoints;
-        if (std::getline(file, line)) {
-            std::istringstream iss(line);
-            if (!(iss >> numPoints)) {
-                std::cerr << "Error parsing number of points" << std::endl;
-                return false;
-            }
-            points.resize(numPoints);
-            for (int i = 0; i < numPoints; ++i) {
-                if (!std::getline(file, line)) {
-                    std::cerr << "Error reading point " << i + 1 << std::endl;
-                    return false;
-                }
-                std::istringstream issPoint(line);
-                double x, y, z;
-                char comma;
-                if (!(issPoint >> x >> comma >> y >> comma >> z)) {
-                    std::cerr << "Error parsing point " << i + 1 << std::endl;
-                    return false;
-                }
-                points[i] = Point(x, y, z);
-            }
-        } else {
-            std::cerr << "Error reading file" << std::endl;
-            return false;
-        }
-
-        return true;
-    }
-
+    
     static Point surfPoint(float u, float v, std::vector<int> i){ //verificar se as contas se fazem bem
     	float m[4][4] = {{-1.0f,  3.0f, -3.0f, 1.0f},
     				 {3.0f, -6.0f,  3.0f, 0.0f},
@@ -535,7 +538,7 @@ public:
 	    	u = v = 0.0f;
 	    } 
         outfile.close();
-        std::cout << "Sphere model generated and saved to " << filename << std::endl;
+        std::cout << "Patch model generated and saved to " << filename << std::endl;
     }
 
 
@@ -555,6 +558,10 @@ int main(int argc, char* argv[]) {
         if (strcmp(argv[1], "box") == 0) {
             Generator::generateBox(std::stof(argv[2]), std::stoi(argv[3]), argv[4]);
         }
+        if (strcmp(argv[1], "patch") == 0) {
+            Generator::generateBezier(argv[2], std::stoi(argv[3]), argv[4]);
+        }
+        
     }
     if (argc == 6) {
         if (strcmp(argv[1], "sphere") == 0) {

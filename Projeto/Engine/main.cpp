@@ -21,7 +21,9 @@
 
 // std::string CONFIGS_DIR = "C:\\Users\\gimez\\Desktop\\CG2324\\Projeto\\test_files\\test_files_phase_2";
 // std::string CONFIGS_DIR = "C:\\Users\\gimez\\Desktop\\CG2324\\Projeto\\test_files";
-std::string CONFIGS_DIR = "/mnt/additional/repos/CG2324/Projeto/test_files"; // alex
+std::string CONFIGS_DIR = "/home/alex/Documents/Projetos/CG2324/Projeto/test_files"; // alex
+
+//std::string CONFIGS_DIR = "/mnt/additional/repos/CG2324/Projeto/test_files"; // gustp
 float camX, camY, camZ;
 float lookAtX, lookAtY, lookAtZ;
 float upX, upY, upZ;
@@ -725,7 +727,7 @@ int main(int argc, char **argv)
 {
 
 	// std::string xmlFilePath = CONFIGS_DIR + "/test_files_phase_3/" + "test_3_1.xml";
-	std::string xmlFilePath = CONFIGS_DIR + "/test_files_phase_3/" + "solar.xml";
+	std::string xmlFilePath = CONFIGS_DIR + "/test_files_phase_3/" + "test_3_1.xml";
 
 	// Load the XML file
 	pugi::xml_document doc;
