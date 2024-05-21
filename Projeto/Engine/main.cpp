@@ -507,7 +507,7 @@ void renderScene(void)
 			  upX, upY, upZ);
 
 	// desenhar axis
-	drawAxis();
+	//drawAxis();
 	glPolygonMode(GL_FRONT, mode);
 
 	// desenhar models VBO's
@@ -727,7 +727,7 @@ int main(int argc, char **argv)
 {
 
 	// std::string xmlFilePath = CONFIGS_DIR + "/test_files_phase_3/" + "test_3_1.xml";
-	std::string xmlFilePath = CONFIGS_DIR + "/test_files_phase_3/" + "solar.xml";
+	std::string xmlFilePath = CONFIGS_DIR + "/test_files_phase_3/" + "test_3_1.xml";
 
 	// Load the XML file
 	pugi::xml_document doc;
