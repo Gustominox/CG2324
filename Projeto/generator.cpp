@@ -35,6 +35,13 @@ float multVectors(float *m, float *v)
 	return res;
 }
 
+void cross(float *a, float *b, float *res) {
+
+	res[0] = a[1]*b[2] - a[2]*b[1];
+	res[1] = a[2]*b[0] - a[0]*b[2];
+	res[2] = a[0]*b[1] - a[1]*b[0];
+}
+
 
 class Point
 {
@@ -52,6 +59,15 @@ public:
 	void setY(float _y) { y = _y; }
 	void setZ(float _z) { z = _z; }
 };
+
+
+void normalize(Point a) {
+
+	float l = sqrt(a.getX()*a.getX() + a.getY() * a.getY() + a.getZ() * a.getZ());
+	a.setX(a.getX()/l);
+	a.setY(a.getY()/l);
+	a.setY(a.getZ()/l);
+}
 
 std::vector<std::vector<int>> vectors;
 std::vector<Point> controlPoints;
@@ -90,7 +106,6 @@ bool parseFile(const std::string& filename, std::vector<std::vector<int>>& vecto
         std::cerr << "Error reading file" << std::endl;
         return false;
     }
-
     // Parse points
     int numPoints;
     if (std::getline(file, line)) {
@@ -124,18 +139,50 @@ bool parseFile(const std::string& filename, std::vector<std::vector<int>>& vecto
     return true;
 }
 
-class Generator {
-public:
-    // Generate a plane model
-    static void generatePlane(float size, int divisions, const std::string& filename) {
+void write3D(std::vector<Point>& points, std::vector<Point>& normals, std::vector<Point>& textures, const std::string& filename) {
+        
         std::ofstream outfile(filename);
+        
         if (!outfile.is_open()) {
             std::cerr << "Error: Unable to open file " << filename << std::endl;
             return;
         }
-
-        // Set precision to 6 decimals
+        
         outfile << std::fixed << std::setprecision(6);
+
+        //escrever todos os pontos no ficheiro (1º pontos, 2º normais, 3º texturas)
+        //outfile << "v;" << a.getX() << ";" << a.getY() << ";"  << a.getZ() << ";" << std::endl;;
+        //outfile << "n;" << na.getX() << ";" << na.getY() << ";"  << na.getZ() << ";" << std::endl;;
+        //outfile << "t;" << ta.getX() << ";" << ta.getY() << ";"  << ta.getZ() << ";" << std::endl;;
+
+        for(size_t i = 0; i < points.size(); i++){
+            Point a = points[i];
+            outfile << "v;" << a.getX() << ";" << a.getY() << ";"  << a.getZ() << ";" << std::endl;;
+        }
+
+        for(size_t i = 0; i < normals.size(); i++){
+            Point a = normals[i];
+            outfile << "n;" << a.getX() << ";" << a.getY() << ";"  << a.getZ() << ";" << std::endl;;
+        }
+
+        for(size_t i = 0; i < textures.size(); i++){
+            Point a = textures[i];
+            outfile << "t;" << a.getX() << ";" << a.getY() << ";"  << a.getZ() << ";" << std::endl;;
+        }
+
+        outfile.close();
+}
+
+
+class Generator {
+public:
+    // Generate a plane model
+    static void generatePlane(float size, int divisions, const std::string& filename) {
+
+        std::vector<Point> Points;
+        std::vector<Point> Normals;
+        std::vector<Point> Textures;
+
         
         //tamanho dos catetos do triangulo
         float step = size / divisions;
@@ -151,31 +198,60 @@ public:
                 float posZ = z * step - size / 2;
                 float x2 = posX + step;
                 float z2 = posZ + step;
+                
+                // Vertices
+                Point a = Point(posX, 0.0, posZ);
+                Point b = Point(x2, 0.0, z2);
+                Point c = Point(x2, 0.0, posZ);
+                Point d = Point(posX, 0.0, z2);
+                //Parte superior
+                Points.push_back(a);
+                Points.push_back(b);
+                Points.push_back(c);
+                Points.push_back(a);
+                Points.push_back(d);
+                Points.push_back(b);
+                //Parte inferior
+                Points.push_back(a);
+                Points.push_back(c);
+                Points.push_back(b);
+                Points.push_back(a);
+                Points.push_back(b);
+                Points.push_back(d);
 
-                outfile << "v;" << posX << ";0.000000;" << posZ << ";" << std::endl;;
-                outfile << "v;" << x2 << ";0.000000;" << z2 << ";" << std::endl;;
-                outfile << "v;" << x2 << ";0.000000;" << posZ << ";" << std::endl;;
+                //Normals
+                Point na = Point(0.0, 1.0, 0.0);
 
-                outfile << "v;" << posX << ";0.000000;" << posZ << ";" << std::endl;;
-                outfile << "v;" << posX << ";0.000000;" << z2 << ";" << std::endl;;
-                outfile << "v;" << x2 << ";0.000000;" << z2 << ";" << std::endl;;
+                Normals.push_back(na);
+                Normals.push_back(na);
+                Normals.push_back(na);
+                Normals.push_back(na);
+                Normals.push_back(na);
+                Normals.push_back(na);
+                Normals.push_back(na);
+                Normals.push_back(na);
+                Normals.push_back(na);
+                Normals.push_back(na);
+                Normals.push_back(na);
+                Normals.push_back(na);
+
+                //Textures
+
+
             }
         }
-        outfile.close();
+
+        //funçao que recebe os 3 vetores o nome do ficheiro e escreve o ficheiro
+        write3D(Points, Normals, Textures, filename);
         std::cout << "Plane model generated and saved to " << filename << std::endl;
     }
 
     // Generate a box model
     static void generateBox(float size, int divisions, const std::string& filename) {
 
-        std::ofstream outfile(filename);
-        if (!outfile.is_open()) {
-            std::cerr << "Error: Unable to open file " << filename << std::endl;
-            return;
-        }
-
-        // Set precision to 6 decimals
-        outfile << std::fixed << std::setprecision(6);
+        std::vector<Point> Points;
+        std::vector<Point> Normals;
+        std::vector<Point> Textures;
 
         //tamanho dos catetos do triangulo
         float step = size / divisions;
@@ -194,13 +270,31 @@ public:
                 float x2 = posX + step;
                 float z2 = posZ + step;
 
-                outfile << "v;" << posX << ";" <<posInicial<< ";" << posZ << ";" << std::endl;;
-                outfile << "v;" << x2 << ";" <<posInicial<< ";"  << posZ << ";" << std::endl;;
-                outfile << "v;" << x2 << ";" <<posInicial<< ";"  << z2 << ";" << std::endl;;
+                //Vertices
+                Point a = Point(posX, posInicial, posZ);                
+                Point b = Point(x2, posInicial, posZ);
+                Point c = Point(x2, posInicial, z2);
+                Point d = Point(posX, posInicial, z2);      
+                
+                Points.push_back(a);
+                Points.push_back(b);
+                Points.push_back(c);
+                Points.push_back(a);                
+                Points.push_back(c);                          
+                Points.push_back(d);
 
-                outfile << "v;" << posX << ";" <<posInicial<< ";"  << posZ << ";" << std::endl;;
-                outfile << "v;" << x2 << ";" <<posInicial<< ";"  << z2 << std::endl;
-                outfile << "v;" << posX << ";" <<posInicial<< ";"  << z2 << ";" << std::endl;;
+                //Normals
+                Point na = Point(0.0, -1.0, 0.0);
+
+                Normals.push_back(na);
+                Normals.push_back(na);
+                Normals.push_back(na);
+                Normals.push_back(na);
+                Normals.push_back(na);
+                Normals.push_back(na);
+
+                //Textures
+
 
             }
         }
@@ -216,14 +310,30 @@ public:
                 float y2 = posY + step;
                 float z2 = posZ + step;
 
-                outfile << "v;" << posInicial << ";" <<posY<< ";" << posZ << ";" << std::endl;;
-                outfile << "v;" << posInicial << ";" <<y2<< ";"  << z2 << ";" << std::endl;;
-                outfile << "v;" << posInicial << ";" <<y2<< ";"  << posZ << ";" << std::endl;;
+                //Vetices
+                Point a = Point(posInicial, posY, posZ);
+                Point b = Point(posInicial, y2, z2);
+                Point c = Point(posInicial, y2, posZ);
+                Point d = Point(posInicial, posY, z2);
 
+                Points.push_back(a);
+                Points.push_back(b);
+                Points.push_back(c);
+                Points.push_back(a);
+                Points.push_back(d);
+                Points.push_back(b);
 
-                outfile << "v;" << posInicial << ";" <<posY<< ";"  << posZ << ";" << std::endl;;
-                outfile << "v;" << posInicial<< ";" <<posY<< ";"  << z2 << ";" << std::endl;;
-                outfile << "v;" << posInicial<< ";" <<y2<< ";"  << z2 << ";" << std::endl;;
+                //Normals
+                Point na = Point(-1.0, 0.0, 0.0);
+
+                Normals.push_back(na);
+                Normals.push_back(na);
+                Normals.push_back(na);
+                Normals.push_back(na);
+                Normals.push_back(na);
+                Normals.push_back(na);
+
+                //Textures
 
             }
         }
@@ -239,13 +349,30 @@ public:
                 float x2 = posX + step;
                 float y2 = posY + step;
 
-                outfile << "v;" << posX << ";" <<posY<< ";" << posInicial << ";" << std::endl;;
-                outfile << "v;" << x2 << ";" <<y2<< ";"  << posInicial << ";" << std::endl;;
-                outfile << "v;" << x2 << ";" <<posY<< ";"  << posInicial << ";" << std::endl;;
+                //Vertices
+                Point a = Point(posX, posY, posInicial);
+                Point b = Point(x2, y2, posInicial);
+                Point c = Point(x2, posY, posInicial);
+                Point d = Point(posX, y2, posInicial);
 
-                outfile << "v;" << posX << ";" <<posY<< ";"  << posInicial << ";" << std::endl;;
-                outfile << "v;" << posX << ";" <<y2<< ";"  << posInicial << ";" << std::endl;;
-                outfile << "v;" << x2 << ";" <<y2<< ";"  << posInicial << ";" << std::endl;;
+                Points.push_back(a);
+                Points.push_back(b);
+                Points.push_back(c);
+                Points.push_back(a);
+                Points.push_back(d);
+                Points.push_back(b);
+
+                //Normals
+                Point na = Point(0.0, 0.0, -1.0);
+
+                Normals.push_back(na);
+                Normals.push_back(na);
+                Normals.push_back(na);
+                Normals.push_back(na);
+                Normals.push_back(na);
+                Normals.push_back(na);
+
+                //Textures
             }
         }
 
@@ -263,13 +390,31 @@ public:
                 float x2 = posX + step;
                 float z2 = posZ + step;
 
-                outfile << "v;" << posX << ";" <<posInicial<< ";"  << posZ << ";" << std::endl;;
-                outfile << "v;" << x2 << ";" <<posInicial<< ";"  << z2 << ";" << std::endl;;
-                outfile << "v;" << x2 << ";" <<posInicial<< ";"  << posZ << ";" << std::endl;;
+                //Vertices
+                Point a = Point(posX, posInicial, posZ);
+                Point b = Point(x2, posInicial, z2);
+                Point c = Point(x2, posInicial, posZ);
+                Point d = Point(posX, posInicial, z2);
 
-                outfile << "v;" << posX << ";" <<posInicial<< ";"  << posZ << ";" << std::endl;;
-                outfile << "v;" << posX << ";" <<posInicial<< ";"  << z2 << ";" << std::endl;;
-                outfile << "v;" << x2 << ";" <<posInicial<< ";"  << z2 << ";" << std::endl;;
+                Points.push_back(a);
+                Points.push_back(b);
+                Points.push_back(c);
+                Points.push_back(a);
+                Points.push_back(d);
+                Points.push_back(b);
+
+                //Normals
+                Point na = Point(0.0, 1.0, 0.0);
+
+                Normals.push_back(na);
+                Normals.push_back(na);
+                Normals.push_back(na);
+                Normals.push_back(na);
+                Normals.push_back(na);
+                Normals.push_back(na);
+
+                //Textures
+
             }
         }
 
@@ -286,15 +431,30 @@ public:
                 float y2 = posY + step;
                 float z2 = posZ + step;
 
-                outfile << "v;" << posInicial << ";" <<posY<< ";" << posZ << ";" << std::endl;;
-                outfile << "v;" << posInicial << ";" <<y2<< ";"  << posZ << ";" << std::endl;;
-                outfile << "v;" << posInicial << ";" <<y2<< ";"  << z2 << ";" << std::endl;;
+                //Vertices
+                Point a = Point(posInicial, posY, posZ);
+                Point b = Point(posInicial, y2, posZ);
+                Point c = Point(posInicial, y2, z2);
+                Point d = Point(posInicial, posY, z2);
 
+                Points.push_back(a);
+                Points.push_back(b);
+                Points.push_back(c);
+                Points.push_back(a);
+                Points.push_back(c);
+                Points.push_back(d);
+                
+                //Normals
+                Point na = Point(1.0, 0.0, 0.0);
 
-                outfile << "v;" << posInicial<< ";" <<posY<< ";"  << posZ << ";" << std::endl;;
-                outfile << "v;" << posInicial<< ";" <<y2<< ";"  << z2 << ";" << std::endl;;
-                outfile << "v;" << posInicial<< ";" <<posY<< ";"  << z2 << ";" << std::endl;;
+                Normals.push_back(na);
+                Normals.push_back(na);
+                Normals.push_back(na);
+                Normals.push_back(na);
+                Normals.push_back(na);
+                Normals.push_back(na);
 
+                //Textures
             }
         }
 
@@ -310,31 +470,44 @@ public:
                 float x2 = posX + step;
                 float y2 = posY + step;
 
-                outfile << "v;" << posX << ";" <<posY<< ";" << posInicial << ";" << std::endl;;
-                outfile << "v;" << x2 << ";" <<posY<< ";"  << posInicial << ";" << std::endl;;
-                outfile << "v;" << x2 << ";" <<y2<< ";"  << posInicial << ";" << std::endl;;
+                //Vertices
+                Point a = Point(posX, posY, posInicial);
+                Point b = Point(x2, posY, posInicial);
+                Point c = Point(x2, y2, posInicial);
+                Point d = Point(posX, y2, posInicial);        
 
-                outfile << "v;" << posX << ";" <<posY<< ";"  << posInicial << ";" << std::endl;;
-                outfile << "v;" << x2 << ";" <<y2<< ";"  << posInicial << ";" << std::endl;;
-                outfile << "v;" << posX << ";" <<y2<< ";"  << posInicial << ";" << std::endl;;
+                Points.push_back(a);
+                Points.push_back(b);
+                Points.push_back(c);
+                Points.push_back(a);
+                Points.push_back(c);
+                Points.push_back(d);
+
+                //Normals
+                Point na = Point(0.0, 0.0, 1.0);
+
+                Normals.push_back(na);
+                Normals.push_back(na);
+                Normals.push_back(na);
+                Normals.push_back(na);
+                Normals.push_back(na);
+                Normals.push_back(na);   
+
+                //Textures         
             }
         }
 
 
         
-        outfile.close();
+        write3D(Points, Normals, Textures, filename);
         std::cout << "Box model generated and saved to " << filename << std::endl;
     }
 
     static void generateCone(float radius, float height, int slices, int stacks, const std::string& filename){
-        std::ofstream outfile(filename);
-        if (!outfile.is_open()) {
-            std::cerr << "Error: Unable to open file " << filename << std::endl;
-            return;
-        }
 
-        // Set precision to 6 decimals
-        outfile << std::fixed << std::setprecision(6);  
+        std::vector<Point> Points;
+        std::vector<Point> Normals;
+        std::vector<Point> Textures;
 
         //altura de cada stack
         float alt = height/stacks;
@@ -372,39 +545,83 @@ public:
 
                 //base
                 if(j == 0){
-                    outfile << "v;" << "0.000000" << ";0.000000;" << "0.000000" << ";" << std::endl;;
-                    outfile << "v;" << x2 << ";" <<y0<< ";"  << z2 << ";" << std::endl;;
-                    outfile << "v;" << x1 << ";" <<y0<< ";"  << z1 << ";" << std::endl;;
+                    //Vertices
+                    Point b0 = Point(0.0, 0.0, 0.0);
+                    Point b1 = Point(x2, y0, z2);
+                    Point b2 = Point(x1, y0, z1);
+
+                    Points.push_back(b0);
+                    Points.push_back(b1);
+                    Points.push_back(b2);
+
+                    //Normals
+                    Point nb0 = Point(0.0, -1.0, 0.0);
+
+                    Normals.push_back(nb0);            
+                    Normals.push_back(nb0);
+                    Normals.push_back(nb0);
+
+                    //Textures
+
                 }
 
                 //triangulo de baixo do trapezio
-                outfile << "v;" << x1 << ";" <<y0<<  ";" << z1 << ";" << std::endl;;
-                outfile << "v;" << x2 << ";" <<y0<< ";"  << z2 << ";" << std::endl;;
-                outfile << "v;" << x3 << ";" <<y1<< ";"  << z3 << ";" << std::endl;;
+                //Vertice
+                Point a = Point(x1, y0, z1);
+                Point b = Point(x2, y0, z3);
+                Point c = Point(x3, y1, z3);      
+
+                Points.push_back(a);    
+                Points.push_back(b);                    
+                Points.push_back(c);   
+
+                //Normals
+                normalize(a);
+                normalize(b);
+                normalize(c);
+
+                Normals.push_back(a);
+                Normals.push_back(b);
+                Normals.push_back(c);
+
+                //Textures
                 
                 //triangulo de cima do trapezio
                 if(j != stacks-1){
-                    outfile << "v;" << x2 << ";" <<y0<<  ";" << z2 << ";" << std::endl;;
-                    outfile << "v;" << x4 << ";" <<y1<< ";"  << z4 << ";" << std::endl;;
-                    outfile << "v;" << x3 << ";" <<y1<< ";"  << z3 << ";" << std::endl;;
+                    //Vertices
+                    Point d = Point(x2, y0, z2);
+                    Point e = Point(x4, y1, z4);
+                    Point f = Point(x3, y1, z3);
+
+                    Points.push_back(d);
+                    Points.push_back(e);
+                    Points.push_back(f);
+
+                    //Normals
+                    normalize(d);
+                    normalize(e);
+                    normalize(f);
+
+                    Normals.push_back(d);
+                    Normals.push_back(e);
+                    Normals.push_back(f);
+
+                    //Textures
 
                 }
                 
             }
         }
-        outfile.close();
+        write3D(Points, Normals, Textures, filename);
         std::cout << "Cone model generated and saved to " << filename << std::endl;
     }
 
     static void generateSphere(float radius, int slices, int stacks, const std::string& filename){
-        std::ofstream outfile(filename);
-        if (!outfile.is_open()) {
-            std::cerr << "Error: Unable to open file " << filename << std::endl;
-            return;
-        }
-
-        // Set precision to 6 decimals
-        outfile << std::fixed << std::setprecision(6);  
+        
+        std::vector<Point> Points;
+        std::vector<Point> Normals;
+        std::vector<Point> Textures;
+          
 
         for (int i = 0; i < stacks; ++i) {
         float beta = i * (M_PI / stacks);
@@ -433,26 +650,58 @@ public:
                 float z3 = radius * cos(alpha2) * sin(beta2);
 
 		    	if(i !=  0){
-                    outfile << "v;" << x0 << ";" <<y0<<  ";" << z0 << ";" << std::endl;;
-		    outfile << "v;" << x2 << ";" <<y2<< ";"  << z2 << ";" << std::endl;;
-		    outfile << "v;" << x1 << ";" <<y1<< ";"  << z1 << ";" << std::endl;;
+                    //Vertices
+                    Point a = Point(x0, y0, z0);
+                    Point b = Point(x2, y2, z2);
+                    Point c = Point(x1, y1, z1);
+
+                    Points.push_back(a);
+                    Points.push_back(b);
+                    Points.push_back(c);
+
+                    //Normals
+                    normalize(a);
+                    normalize(b);
+                    normalize(c);
+                    
+                    Normals.push_back(a);
+                    Normals.push_back(b);
+                    Normals.push_back(c);                 
+
+                    //Textures
 		    	}
 
 		    	if(i != stacks-1){
-                    outfile << "v;" << x1 << ";" <<y1<<  ";" << z1 << ";" << std::endl;;
-		    outfile << "v;" << x2 << ";" <<y2<< ";"  << z2 << ";" << std::endl;;
-		    outfile << "v;" << x3 << ";" <<y3<< ";"  << z3 << ";" << std::endl;;
+                    //Vertices
+                    Point d = Point(x1, y1, z1);
+                    Point e = Point(x1, y1, z1);
+                    Point f = Point(x1, y1, z1);
+
+                    Points.push_back(d);
+                    Points.push_back(e);
+                    Points.push_back(f);
+
+                    //Normals
+                    normalize(d);
+                    normalize(e);
+                    normalize(f);
+
+                    Normals.push_back(d);
+                    Normals.push_back(e);
+                    Normals.push_back(f);                    
+                    
+                    //Textures
 		    	}
             }
         }
-        outfile.close();
+        write3D(Points, Normals, Textures, filename);
         std::cout << "Sphere model generated and saved to " << filename << std::endl;
     
     }
 
 
     
-    static Point surfPoint(float u, float v, std::vector<int> i){ //verificar se as contas se fazem bem
+    static void surfPoint(float u, float v, std::vector<int> i, Point a, Point normal){ //verificar se as contas se fazem bem
     	float m[4][4] = {{-1.0f,  3.0f, -3.0f, 1.0f},
     				 {3.0f, -6.0f,  3.0f, 0.0f},
     				 {-3.0f,  3.0f,  0.0f, 0.0f},
@@ -460,10 +709,20 @@ public:
 
     	float uv[4] = {u*u*u,u*u,u,1.0f}; //1*4 vetor u
     	float vv[4] = {v*v*v,v*v,v,1.0f}; //4*1 vetor v
+        float der_uv[4] = {3.0f*u*u, 2.0f*u, 1.0f, 0.0f}; // 1*4 derivada do vetor u (u')
+        float der_vv[4] = {3.0f*v*v, 2.0f*v, 1.0f, 0.0f}; // 4*1 derivada do vetor v (v')
+
     	float um[4];
     	float vm[4];
-    	multMatrixVector(m, uv, um, true); 	// uv * m = 1 * 4
-    	multMatrixVector(m, vv, vm, false); // m * vv = 4 * 1
+    	multMatrixVector(m, uv, um, true); 	// uv * M = 1 * 4
+    	multMatrixVector(m, vv, vm, false); // M * vv = 4 * 1
+
+        float dum[4];
+        float dvm[4];
+
+        multMatrixVector(m, der_uv, dum, true);  // u' * M = 1 * 4
+        multMatrixVector(m, der_vv, dvm, false); // M * v' = 4 * 1 
+
     	//matrix dos X's
     	float mx[4][4] = {	{controlPoints[i[0]].getX(),  controlPoints[i[1]].getX(),  controlPoints[i[2]].getX(),  controlPoints[i[3]].getX()},
     				 		{controlPoints[i[4]].getX(),  controlPoints[i[5]].getX(),  controlPoints[i[6]].getX(),  controlPoints[i[7]].getX()},
@@ -482,62 +741,104 @@ public:
     				 		{controlPoints[i[8]].getZ(),  controlPoints[i[9]].getZ(),  controlPoints[i[10]].getZ(), controlPoints[i[11]].getZ()},
     				 		{controlPoints[i[12]].getZ(), controlPoints[i[13]].getZ(), controlPoints[i[14]].getZ(), controlPoints[i[15]].getZ()}};
 
-    	float umpx[4];
+    	
+        //Vertice
+        float umpx[4];
     	float umpy[4];
     	float umpz[4];
 
     	multMatrixVector(mx, um, umpx, true); // um * mx = 1*4 
     	multMatrixVector(my, um, umpy, true); // um * my = 1*4
     	multMatrixVector(mz, um, umpz, true); // um * mz = 1*4
-    	Point a;
+
     	a.setX(multVectors(umpx, vm));
     	a.setY(multVectors(umpy, vm));
     	a.setZ(multVectors(umpz, vm));
-    	return a;
+
+        //Normal
+        float Du[3]; //derivada parcial u
+        float Dv[3]; //derivada parcial v
+
+        float Dumpx[4];
+        float Dumpy[4];
+        float Dumpz[4];
+        //derivada parcial u
+        // U' * M * P
+        multMatrixVector(mx, dum, Dumpx, true);
+        multMatrixVector(my, dum, Dumpy, true);
+        multMatrixVector(mz, dum, Dumpz, true);
+        Du[0] = multVectors(Dumpx,vm);
+        Du[1] = multVectors(Dumpy,vm);
+        Du[2] = multVectors(Dumpz,vm);
+        
+        //derivada parcial v
+        multMatrixVector(mx, um, umpx, true);
+        multMatrixVector(my, um, umpy, true);
+        multMatrixVector(mz, um, umpz, true);
+        Dv[0] = multVectors(umpx, dvm);
+        Dv[1] = multVectors(umpy, dvm);
+        Dv[2] = multVectors(umpz, dvm);
+        
+        float n[3];
+        cross(Dv, Du, n);
+
+        normal.setX(n[0]);
+        normal.setY(n[1]);
+        normal.setZ(n[2]);
+
+        //Textures
+
     }
 
 
     static void generateBezier(const std::string& patchfile, int tessellation, const std::string& filename){
         //abre e le o patchfile
         parseFile(patchfile, vectors, controlPoints);
-        
-        
-        std::ofstream outfile(filename);
-        if (!outfile.is_open()) {
-            std::cerr << "Error: Unable to open file " << filename << std::endl;
-            return;
-        }
 
-        // Set precision to 6 decimals
-        outfile << std::fixed << std::setprecision(6);
+        std::vector<Point> Points;
+        std::vector<Point> Normals;
+        std::vector<Point> Textures;
 
         Point a, b, c, d;
+        Point na, nb, nc, nd;
+        Point ta, tb, tc, td;
+
 	    float u = 0.0f, v = 0.0f, delta = 1.0f/tessellation;
 	    for(int k = 0; k<vectors.size(); k++){ //percorrer cada vetor de indices
 	    	for(int i = 0; i < tessellation; i++, u+=delta){
 	    		for(int j = 0; j < tessellation; j++, v+=delta){
                 
 	    			//CALCULO DE PONTOS
-	    			a = surfPoint(u		 , v	  , vectors[k]);
-	    			b = surfPoint(u		 , v+delta, vectors[k]);
-	    			c = surfPoint(u+delta, v	  , vectors[k]);
-	    			d = surfPoint(u+delta, v+delta, vectors[k]);
+	    			surfPoint(u		 , v	  , vectors[k], a, na);
+	    			surfPoint(u		 , v+delta, vectors[k], b, nb);
+	    			surfPoint(u+delta, v	  , vectors[k], c, nc);
+	    			surfPoint(u+delta, v+delta, vectors[k], d, nd);
     
                     
                     //Triangulaçao
-                    outfile << "v;" << c.getX() << ";" << c.getY() <<  ";" << c.getZ() << ";" << std::endl;;
-		            outfile << "v;" << a.getX() << ";" << a.getY() << ";"  << a.getZ() << ";" << std::endl;;
-		            outfile << "v;" << b.getX() << ";" << b.getY() << ";"  << b.getZ() << ";" << std::endl;;
-                    outfile << "v;" << b.getX() << ";" << b.getY() <<  ";" << b.getZ() << ";" << std::endl;;
-		            outfile << "v;" << d.getX() << ";" << d.getY() << ";"  << d.getZ() << ";" << std::endl;;
-		            outfile << "v;" << c.getX() << ";" << c.getY() << ";"  << c.getZ() << ";" << std::endl;;
+                    //Vertices
+                    Points.push_back(c);
+                    Points.push_back(a);
+                    Points.push_back(b);
+                    Points.push_back(b);
+                    Points.push_back(d);
+                    Points.push_back(c);
+                    
+                    //Normals
+                    Normals.push_back(nc);
+                    Normals.push_back(na);
+                    Normals.push_back(nb);
+                    Normals.push_back(nb);
+                    Normals.push_back(nd);
+                    Normals.push_back(nc);
+
     
 	    		}
 	    		v = 0.0f;
 	    	}
 	    	u = v = 0.0f;
 	    } 
-        outfile.close();
+        write3D(Points, Normals, Textures, filename);
         std::cout << "Patch model generated and saved to " << filename << std::endl;
     }
 
