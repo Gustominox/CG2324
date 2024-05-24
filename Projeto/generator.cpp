@@ -61,12 +61,13 @@ public:
 };
 
 
-void normalize(Point a) {
-
+Point normalize(Point a) {
+    Point r;
 	float l = sqrt(a.getX()*a.getX() + a.getY() * a.getY() + a.getZ() * a.getZ());
-	a.setX(a.getX()/l);
-	a.setY(a.getY()/l);
-	a.setY(a.getZ()/l);
+	r.setX(a.getX()/l);
+	r.setY(a.getY()/l);
+	r.setY(a.getZ()/l);
+    return r;
 }
 
 std::vector<std::vector<int>> vectors;
@@ -568,7 +569,7 @@ public:
                 //triangulo de baixo do trapezio
                 //Vertice
                 Point a = Point(x1, y0, z1);
-                Point b = Point(x2, y0, z3);
+                Point b = Point(x2, y0, z2);
                 Point c = Point(x3, y1, z3);      
 
                 Points.push_back(a);    
@@ -576,13 +577,13 @@ public:
                 Points.push_back(c);   
 
                 //Normals
-                normalize(a);
-                normalize(b);
-                normalize(c);
+                Point na = normalize(a);
+                Point nb = normalize(b);
+                Point nc = normalize(c);
 
-                Normals.push_back(a);
-                Normals.push_back(b);
-                Normals.push_back(c);
+                Normals.push_back(na);
+                Normals.push_back(nb);
+                Normals.push_back(nc);
 
                 //Textures
                 
@@ -598,13 +599,13 @@ public:
                     Points.push_back(f);
 
                     //Normals
-                    normalize(d);
-                    normalize(e);
-                    normalize(f);
+                    Point nd = normalize(d);
+                    Point ne = normalize(e);
+                    Point nf = normalize(f);
 
-                    Normals.push_back(d);
-                    Normals.push_back(e);
-                    Normals.push_back(f);
+                    Normals.push_back(nd);
+                    Normals.push_back(ne);
+                    Normals.push_back(nf);
 
                     //Textures
 
@@ -660,13 +661,13 @@ public:
                     Points.push_back(c);
 
                     //Normals
-                    normalize(a);
-                    normalize(b);
-                    normalize(c);
+                    Point na = normalize(a);
+                    Point nb = normalize(b);
+                    Point nc = normalize(c);
                     
-                    Normals.push_back(a);
-                    Normals.push_back(b);
-                    Normals.push_back(c);                 
+                    Normals.push_back(na);
+                    Normals.push_back(nb);
+                    Normals.push_back(nc);                 
 
                     //Textures
 		    	}
@@ -674,21 +675,22 @@ public:
 		    	if(i != stacks-1){
                     //Vertices
                     Point d = Point(x1, y1, z1);
-                    Point e = Point(x1, y1, z1);
-                    Point f = Point(x1, y1, z1);
+                    Point e = Point(x2, y2, z2);
+                    Point f = Point(x3, y3, z3);
 
                     Points.push_back(d);
                     Points.push_back(e);
                     Points.push_back(f);
 
                     //Normals
-                    normalize(d);
-                    normalize(e);
-                    normalize(f);
+                    
+                    Point nd = normalize(d);
+                    Point ne = normalize(e);
+                    Point nf = normalize(f);
 
-                    Normals.push_back(d);
-                    Normals.push_back(e);
-                    Normals.push_back(f);                    
+                    Normals.push_back(nd);
+                    Normals.push_back(ne);
+                    Normals.push_back(nf);                    
                     
                     //Textures
 		    	}
@@ -701,7 +703,7 @@ public:
 
 
     
-    static void surfPoint(float u, float v, std::vector<int> i, Point a, Point normal){ //verificar se as contas se fazem bem
+    static void surfPoint(float u, float v, std::vector<int> i, Point* a, Point* normal){ //verificar se as contas se fazem bem
     	float m[4][4] = {{-1.0f,  3.0f, -3.0f, 1.0f},
     				 {3.0f, -6.0f,  3.0f, 0.0f},
     				 {-3.0f,  3.0f,  0.0f, 0.0f},
@@ -751,9 +753,9 @@ public:
     	multMatrixVector(my, um, umpy, true); // um * my = 1*4
     	multMatrixVector(mz, um, umpz, true); // um * mz = 1*4
 
-    	a.setX(multVectors(umpx, vm));
-    	a.setY(multVectors(umpy, vm));
-    	a.setZ(multVectors(umpz, vm));
+    	(*a).setX(multVectors(umpx, vm));
+    	(*a).setY(multVectors(umpy, vm));
+    	(*a).setZ(multVectors(umpz, vm));
 
         //Normal
         float Du[3]; //derivada parcial u
@@ -782,9 +784,9 @@ public:
         float n[3];
         cross(Dv, Du, n);
 
-        normal.setX(n[0]);
-        normal.setY(n[1]);
-        normal.setZ(n[2]);
+        (*normal).setX(n[0]);
+        (*normal).setY(n[1]);
+        (*normal).setZ(n[2]);
 
         //Textures
 
@@ -809,10 +811,10 @@ public:
 	    		for(int j = 0; j < tessellation; j++, v+=delta){
                 
 	    			//CALCULO DE PONTOS
-	    			surfPoint(u		 , v	  , vectors[k], a, na);
-	    			surfPoint(u		 , v+delta, vectors[k], b, nb);
-	    			surfPoint(u+delta, v	  , vectors[k], c, nc);
-	    			surfPoint(u+delta, v+delta, vectors[k], d, nd);
+	    			surfPoint(u		 , v	  , vectors[k], &a, &na);
+	    			surfPoint(u		 , v+delta, vectors[k], &b, &nb);
+	    			surfPoint(u+delta, v	  , vectors[k], &c, &nc);
+	    			surfPoint(u+delta, v+delta, vectors[k], &d, &nd);
     
                     
                     //Triangulaçao
